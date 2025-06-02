@@ -333,11 +333,13 @@ fileConfigs:
         @label @FLUENT_LOG
       </match>
 
+      # Bỏ comment nếu muốn ignore logs từ kube-system
       # <match kubernetes.var.log.containers.**_kube-system_**>
       #   @type null
       #   @id ignore_kube_system_logs
       # </match>
 
+      # Thêm kubernetes metadata
       <filter kubernetes.**>
         @type kubernetes_metadata
         @id filter_kube_metadata
@@ -345,6 +347,107 @@ fileConfigs:
         skip_container_metadata false
         skip_namespace_metadata true
         skip_master_url true
+      </filter>
+
+      # Parse JSON logs từ containers
+      <filter kubernetes.**>
+        @type parser
+        @id parser_container_logs
+        key_name log
+        reserve_data true
+        remove_key_name_field false
+        emit_invalid_record_to_error false
+        <parse>
+          @type json
+          time_key ts
+          time_type float
+          time_format %s
+          keep_time_key true
+        </parse>
+      </filter>
+
+      # Xử lý timestamp và format lại
+      <filter kubernetes.**>
+        @type record_transformer
+        @id transformer_timestamp
+        enable_ruby true
+        <record>
+          # Chuyển đổi timestamp Unix thành ISO format
+          timestamp ${record.dig("ts") ? Time.at(record["ts"]).utc.strftime('%Y-%m-%dT%H:%M:%S.%3NZ') : time.strftime('%Y-%m-%dT%H:%M:%S.%3NZ')}
+          
+          # Thêm các trường cần thiết
+          kubernetes_namespace ${record.dig("kubernetes", "namespace_name")}
+          kubernetes_pod ${record.dig("kubernetes", "pod_name")}
+          kubernetes_container ${record.dig("kubernetes", "container_name")}
+          
+          # Giữ log message gốc
+          message ${record["log"] || record["msg"] || ""}
+          
+          # Xóa các trường có thể gây conflict
+          log ${record["log"]}
+        </record>
+        remove_keys ts,docker
+      </filter>
+
+      # Filter để làm sạch dữ liệu trước khi gửi tới Elasticsearch
+      <filter kubernetes.**>
+        @type record_modifier
+        @id modifier_cleanup
+        # Xóa các trường null hoặc empty
+        remove_keys _dummy_
+        <record>
+          _dummy_ ${record.delete_if{|k,v| v.nil? || (v.respond_to?(:empty?) && v.empty?)}}
+        </record>
+        remove_keys _dummy_
+      </filter>
+
+      # Thêm filter để handle các trường đặc biệt cho gorse-worker
+      <filter kubernetes.var.log.containers.gorse-worker**>
+        @type record_transformer
+        @id transformer_gorse_worker
+        enable_ruby true
+        <record>
+          # Parse các metrics từ gorse worker
+          n_complete_users ${record["n_complete_users"]}
+          n_working_users ${record["n_working_users"]}
+          throughput ${record["throughput"]}
+          log_level ${record["level"]}
+          service_type "gorse-worker"
+        </record>
+      </filter>
+
+      # Error handling filter
+      <filter kubernetes.**>
+        @type record_transformer
+        @id transformer_error_handling
+        enable_ruby true
+        <record>
+          # Đảm bảo có timestamp hợp lệ
+          "@timestamp" ${record["timestamp"] || time.strftime('%Y-%m-%dT%H:%M:%S.%3NZ')}
+          
+          # Đảm bảo có index pattern
+          log_source "kubernetes"
+          
+          # Validate required fields
+          _valid ${!record["kubernetes_namespace"].nil? && !record["kubernetes_pod"].nil?}
+        </record>
+      </filter>
+
+      # Loại bỏ các record không hợp lệ
+      <filter kubernetes.**>
+        @type grep
+        @id filter_valid_records
+        <regexp>
+          key _valid
+          pattern ^true$
+        </regexp>
+      </filter>
+
+      # Cleanup cuối cùng
+      <filter kubernetes.**>
+        @type record_modifier
+        @id final_cleanup
+        remove_keys _valid,kubernetes
       </filter>
 
       <match **>
