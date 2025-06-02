@@ -93,11 +93,8 @@ The `fileConfigs` section is organized by sources -> filters -> destinations. Fl
     pos_file /var/log/fluentd-containers.log.pos
     tag kubernetes.*
     read_from_head true
-    emit_unmatched_lines true
-
     <parse>
       @type multi_format
-
       <pattern>
         format json
         time_key time
@@ -105,76 +102,64 @@ The `fileConfigs` section is organized by sources -> filters -> destinations. Fl
         time_format "%Y-%m-%dT%H:%M:%S.%NZ"
         keep_time_key false
       </pattern>
-
       <pattern>
         format regexp
         expression /^(?<time>.+) (?<stream>stdout|stderr)( (.))? (?<log>.*)$/
-        time_key time
-        time_format "%Y-%m-%dT%H:%M:%S.%NZ"
+        time_format '%Y-%m-%dT%H:%M:%S.%NZ'
         keep_time_key false
       </pattern>
     </parse>
+    emit_unmatched_lines true
   </source>
 
 02_filters.conf: |-
-<label @KUBERNETES>
+  <label @KUBERNETES>
+    <match kubernetes.var.log.containers.fluentd**>
+      @type relabel
+      @label @FLUENT_LOG
+    </match>
 
-  # Bỏ qua log chính Fluentd để tránh loop
-  <match kubernetes.var.log.containers.fluentd**>
-    @type relabel
-    @label @FLUENT_LOG
-  </match>
+    # <match kubernetes.var.log.containers.**_kube-system_**>
+    #   @type null
+    #   @id ignore_kube_system_logs
+    # </match>
 
-  # (Không bắt buộc) Bỏ qua log kube-system nếu cần
-  # <match kubernetes.var.log.containers.**_kube-system_**>
-  #   @type null
-  #   @id ignore_kube_system_logs
-  # </match>
+    <filter kubernetes.**>
+      @type record_transformer
+      enable_ruby
+      <record>
+        hostname ${record["kubernetes"]["host"]}
+        raw ${record["log"]}
+      </record>
+      remove_keys $.kubernetes.host,log
+    </filter>
 
-  # Enrich và chuẩn hóa log
-  <filter kubernetes.**>
-    @type record_transformer
-    enable_ruby
-    <record>
-      hostname ${record["kubernetes"]["host"] || record["host"]}
-      raw ${record["log"]}
-    </record>
-    remove_keys $.kubernetes.host,log
-  </filter>
-
-  # Gửi tiếp sang pipeline @DISPATCH
-  <match **>
-    @type relabel
-    @label @DISPATCH
-  </match>
-</label>
-
+    <match **>
+      @type relabel
+      @label @DISPATCH
+    </match>
+  </label>
 
 03_dispatch.conf: |-
-<label @DISPATCH>
+  <label @DISPATCH>
+    <filter **>
+      @type prometheus
+      <metric>
+        name fluentd_input_status_num_records_total
+        type counter
+        desc The total number of incoming records
+        <labels>
+          tag ${tag}
+          hostname ${hostname}
+        </labels>
+      </metric>
+    </filter>
 
-  # Expose metrics input log count
-  <filter **>
-    @type prometheus
-    <metric>
-      name fluentd_input_status_num_records_total
-      type counter
-      desc The total number of incoming records
-      <labels>
-        tag ${tag}
-        hostname ${hostname}
-      </labels>
-    </metric>
-  </filter>
-
-  # Chuyển sang OUTPUT cuối cùng
-  <match **>
-    @type relabel
-    @label @OUTPUT
-  </match>
-
-</label>
-
+    <match **>
+      @type relabel
+      @label @OUTPUT
+    </match>
+  </label>
 
 04_outputs.conf: |-
   <label @OUTPUT>
