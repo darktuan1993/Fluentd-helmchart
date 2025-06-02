@@ -352,7 +352,7 @@ fileConfigs:
             de_dot_separator '_'
           </filter>
 
-          # Parse JSON logs từ containers (nếu có)
+          # Parse JSON logs từ containers trước (nếu có)
           <filter kubernetes.**>
             @type parser
             @id parser_container_logs
@@ -370,38 +370,42 @@ fileConfigs:
             </parse>
           </filter>
 
-          # Parse httplog format để extract method, URL, status code, response time
+          # Parse httplog bằng record_transformer (đáng tin cậy hơn)
           <filter kubernetes.**>
-            @type parser
-            @id parser_httplog
-            key_name log
-            reserve_data true
-            remove_key_name_field false
-            emit_invalid_record_to_error false
-            suppress_parse_error_log true
-            <parse>
-              @type regexp
-              expression /^\[httplog\]\s+(?<method>\w+)\s+(?<url>\S+)\s+completed\s+with\s+status\s+code\s+(?<status_code>\d+)\s+in\s+(?<response_time>[\d.]+)\s+seconds/
-              types status_code:integer,response_time:float
-            </parse>
+            @type record_transformer
+            @id httplog_parser
+            enable_ruby true
+            <record>
+              # Extract HTTP method
+              http_method ${record["log"] && record["log"].match(/\[httplog\]\s+(\w+)\s+/) ? $1 : nil}
+              
+              # Extract URL  
+              http_url ${record["log"] && record["log"].match(/\[httplog\]\s+\w+\s+(\S+)\s+completed/) ? $1 : nil}
+              
+              # Extract status code
+              http_status_code ${record["log"] && record["log"].match(/status\s+code\s+(\d+)/) ? $1.to_i : nil}
+              
+              # Extract response time
+              http_response_time ${record["log"] && record["log"].match(/in\s+([\d.]+)\s+seconds/) ? $1.to_f : nil}
+              
+              # Extract domain from URL
+              http_domain ${record["log"] && record["log"].match(/https?:\/\/([^\/\s]+)/) ? $1 : nil}
+              
+              # Extract path from URL
+              http_path ${record["log"] && record["log"].match(/https?:\/\/[^\/\s]+(\/[^\s\?]*)/) ? $1 : nil}
+              
+              # Determine request type
+              request_type ${record["log"] && record["log"].match(/\[httplog\]\s+GET\s+/) ? "read" : (record["log"] && record["log"].match(/\[httplog\]\s+(POST|PUT|DELETE|PATCH)\s+/) ? "write" : nil)}
+              
+              # Mark if this is httplog
+              is_httplog ${record["log"] && record["log"].match(/^\[httplog\]/) ? true : false}
+              
+              # Extract general log level
+              parsed_log_level ${record["log"] && record["log"].match(/^\[(\w+)\]/) ? $1 : nil}
+            </record>
           </filter>
 
-          # Parse các format log khác (có thể mở rộng thêm)
-          <filter kubernetes.**>
-            @type parser
-            @id parser_general_log_level
-            key_name log
-            reserve_data true
-            remove_key_name_field false
-            emit_invalid_record_to_error false
-            suppress_parse_error_log true
-            <parse>
-              @type regexp
-              expression /^\[(?<log_level>\w+)\]/
-            </parse>
-          </filter>
-
-          # Xử lý timestamp và format lại theo mẫu mong muốn
+          # Main format transformer
           <filter kubernetes.**>
             @type record_transformer
             @id transformer_main_format
@@ -410,49 +414,30 @@ fileConfigs:
               # Giữ nguyên log message gốc
               message ${record["log"] || record["msg"] || ""}
               
-              # Xử lý timestamp - ưu tiên ts từ JSON parse, sau đó dùng time hiện tại
+              # Xử lý timestamp
               timestamp ${record.dig("ts") ? Time.at(record["ts"]).utc.strftime('%Y-%m-%dT%H:%M:%S.%3NZ') : time.strftime('%Y-%m-%dT%H:%M:%S.%3NZ')}
               "@timestamp" ${record.dig("ts") ? Time.at(record["ts"]).utc.strftime('%Y-%m-%dT%H:%M:%S.%3NZ') : time.strftime('%Y-%m-%dT%H:%M:%S.%3NZ')}
               
-              # Thêm các trường kubernetes metadata theo format mong muốn
+              # Kubernetes metadata
               kubernetes_namespace ${record.dig("kubernetes", "namespace_name") || "unknown"}
               kubernetes_pod ${record.dig("kubernetes", "pod_name") || "unknown"}
               kubernetes_container ${record.dig("kubernetes", "container_name") || "unknown"}
               
-              # Thêm stream information (stdout/stderr)
+              # Stream information
               stream ${record.dig("stream") || "stdout"}
               
-              # Thêm log_source identifier
+              # Log source
               log_source "kubernetes"
-              
-              # Thêm các trường parsed từ httplog (nếu có)
-              http_method ${record["method"]}
-              http_url ${record["url"]}
-              http_status_code ${record["status_code"]}
-              http_response_time ${record["response_time"]}
-              
-              # Extract domain từ URL nếu có
-              http_domain ${record["url"] ? record["url"].match(/https?:\/\/([^\/]+)/)?[1] : nil}
-              
-              # Extract path từ URL nếu có  
-              http_path ${record["url"] ? record["url"].match(/https?:\/\/[^\/]+(\/[^?]*)/)?[1] : nil}
-              
-              # Phân loại request type
-              request_type ${record["method"] ? (record["method"] == "GET" ? "read" : "write") : nil}
-              
-              # Parse log level nếu có
-              parsed_log_level ${record["log_level"]}
             </record>
-            remove_keys ts,method,url,status_code,response_time,log_level
+            remove_keys ts
           </filter>
 
-          # Filter đặc biệt cho gorse-worker với các metrics
+          # Filter đặc biệt cho gorse-worker
           <filter kubernetes.var.log.containers.gorse-worker**>
             @type record_transformer
             @id transformer_gorse_worker
             enable_ruby true
             <record>
-              # Parse các metrics từ gorse worker nếu có
               n_complete_users ${record["n_complete_users"]}
               n_working_users ${record["n_working_users"]}
               throughput ${record["throughput"]}
@@ -461,21 +446,18 @@ fileConfigs:
             </record>
           </filter>
 
-          # Cleanup và validate dữ liệu
+          # Validation
           <filter kubernetes.**>
             @type record_transformer
             @id transformer_cleanup_validate
             enable_ruby true
             <record>
-              # Đảm bảo các trường bắt buộc không null
               _valid ${!record["kubernetes_namespace"].nil? && !record["kubernetes_pod"].nil? && !record["kubernetes_container"].nil?}
-              
-              # Đảm bảo message không empty
               _has_message ${!record["message"].nil? && !record["message"].empty?}
             </record>
           </filter>
 
-          # Loại bỏ các record không hợp lệ
+          # Filter valid records
           <filter kubernetes.**>
             @type grep
             @id filter_valid_records
@@ -491,19 +473,18 @@ fileConfigs:
             </and>
           </filter>
 
-          # Final cleanup - xóa các trường temporary và không cần thiết
+          # Final cleanup
           <filter kubernetes.**>
             @type record_modifier
             @id final_cleanup
-            remove_keys _valid,_has_message,kubernetes,docker,log_original
-            # Xóa các trường null hoặc empty
+            remove_keys _valid,_has_message,kubernetes,docker
+            # Remove null/empty values
             <record>
               _dummy_ ${record.delete_if{|k,v| v.nil? || (v.respond_to?(:empty?) && v.empty?)}}
             </record>
             remove_keys _dummy_
           </filter>
 
-          # Route tới dispatcher
           <match **>
             @type relabel
             @label @DISPATCH
@@ -542,8 +523,11 @@ fileConfigs:
         password KyZjD8qkotm70Ci
         # Don't wait for elastic to start up.
         verify_es_version_at_startup false
+        index_name fluentd
+        type_name fluentd
       </match>
     </label>
+
 
 ingress:
   enabled: false
