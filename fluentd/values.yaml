@@ -289,126 +289,110 @@ configMapConfigs: []
 ## Fluentd configurations:
 ##
 fileConfigs:
-  01_sources.conf: |-
-    <source>
-      @type tail
-      @id in_tail_container_logs
-      @label @KUBERNETES
-      path /var/log/containers/*.log
-      pos_file /var/log/fluentd-containers.log.pos
-      tag kubernetes.*
-      read_from_head true
-      emit_unmatched_lines true
+01_sources.conf: |-
+  <source>
+    @type tail
+    @id in_tail_container_logs
+    @label @KUBERNETES
+    path /var/log/containers/*.log
+    pos_file /var/log/fluentd-containers.log.pos
+    tag kubernetes.*
+    read_from_head true
+    emit_unmatched_lines true
 
-      <parse>
-        @type multi_format
+    <parse>
+      @type multi_format
 
-        <pattern>
-          format json
-          time_key time
-          time_type string
-          time_format "%Y-%m-%dT%H:%M:%S.%NZ"
-          keep_time_key false
-        </pattern>
+      <pattern>
+        format json
+        time_key time
+        time_type string
+        time_format "%Y-%m-%dT%H:%M:%S.%NZ"
+        keep_time_key false
+      </pattern>
 
-        <pattern>
-          format regexp
-          expression /^(?<time>.+) (?<stream>stdout|stderr)( (.))? (?<log>.*)$/
-          time_key time
-          time_format "%Y-%m-%dT%H:%M:%S.%NZ"
-          keep_time_key false
-        </pattern>
-      </parse>
-    </source>
-
-
-  02_filters.conf: |-
-    <label @KUBERNETES>
-
-      # Bỏ qua log chính Fluentd để tránh loop
-      <match kubernetes.var.log.containers.fluentd**>
-        @type relabel
-        @label @FLUENT_LOG
-      </match>
-
-      # (Không bắt buộc) Bỏ qua log kube-system nếu cần
-      # <match kubernetes.var.log.containers.**_kube-system_**>
-      #   @type null
-      #   @id ignore_kube_system_logs
-      # </match>
-
-      # Enrich và chuẩn hóa log
-      <filter kubernetes.**>
-        @type record_transformer
-        enable_ruby
-        <record>
-          hostname ${record["kubernetes"]["host"] || record["host"]}
-          raw ${record["log"]}
-        </record>
-        remove_keys $.kubernetes.host,log
-      </filter>
-
-      # Gửi tiếp sang pipeline @DISPATCH
-      <match **>
-        @type relabel
-        @label @DISPATCH
-      </match>
-    </label>
+      <pattern>
+        format regexp
+        expression /^(?<time>.+) (?<stream>stdout|stderr)( (.))? (?<log>.*)$/
+        time_key time
+        time_format "%Y-%m-%dT%H:%M:%S.%NZ"
+        keep_time_key false
+      </pattern>
+    </parse>
+  </source>
 
 
-  03_dispatch.conf: |-
-    <label @DISPATCH>
+02_filters.conf: |-
+  <label @KUBERNETES>
 
-      # Expose metrics input log count
-      <filter **>
-        @type prometheus
-        <metric>
-          name fluentd_input_status_num_records_total
-          type counter
-          desc The total number of incoming records
-          <labels>
-            tag ${tag}
-            hostname ${hostname}
-          </labels>
-        </metric>
-      </filter>
+    # Bỏ qua log chính Fluentd để tránh loop
+    <match kubernetes.var.log.containers.fluentd**>
+      @type relabel
+      @label @FLUENT_LOG
+    </match>
 
-      # Chuyển sang OUTPUT cuối cùng
-      <match **>
-        @type relabel
-        @label @OUTPUT
-      </match>
+    # (Không bắt buộc) Bỏ qua log kube-system nếu cần
+    # <match kubernetes.var.log.containers.**_kube-system_**>
+    #   @type null
+    #   @id ignore_kube_system_logs
+    # </match>
 
-    </label>
-  04_outputs.conf: |-
-    <label @OUTPUT>
-      <match **>
-        @type elasticsearch
-        host "172.16.0.225"
-        port 19200
-        path ""
-        user elastic
-        password KyZjD8qkotm70Ci
-        verify_es_version_at_startup false
-        # Dynamic index based on service
-        index_name "fluentd-${record['service_name']-%Y.%m.%d}"
-        type_name fluentd
-        # Template for better field mapping
-        template_name fluentd_template
-        template_file /fluentd/etc/elasticsearch_template.json
-        # Buffer settings for better performance
-        <buffer time,record.service_name>
-          @type file
-          path /var/log/fluentd-buffers/kubernetes
-          flush_mode interval
-          flush_interval 10s
-          chunk_limit_size 8m
-          queue_limit_length 32
-          retry_max_interval 30
-          retry_forever true
-        </buffer>
-      </match>
-    </label>
+    # Enrich và chuẩn hóa log
+    <filter kubernetes.**>
+      @type record_transformer
+      enable_ruby
+      <record>
+        hostname ${record["kubernetes"]["host"] || record["host"]}
+        raw ${record["log"]}
+      </record>
+      remove_keys $.kubernetes.host,log
+    </filter>
+
+    # Gửi tiếp sang pipeline @DISPATCH
+    <match **>
+      @type relabel
+      @label @DISPATCH
+    </match>
+  </label>
+
+
+03_dispatch.conf: |-
+  <label @DISPATCH>
+
+    # Expose metrics input log count
+    <filter **>
+      @type prometheus
+      <metric>
+        name fluentd_input_status_num_records_total
+        type counter
+        desc The total number of incoming records
+        <labels>
+          tag ${tag}
+          hostname ${hostname}
+        </labels>
+      </metric>
+    </filter>
+
+    # Chuyển sang OUTPUT cuối cùng
+    <match **>
+      @type relabel
+      @label @OUTPUT
+    </match>
+
+  </label>
+
+
+04_outputs.conf: |-
+  <label @OUTPUT>
+    <match **>
+      @type elasticsearch
+      host "172.16.0.225"
+      port 19200
+      path ""
+      user elastic
+      password KyZjD8qkotm70Ci
+    </match>
+  </label>
 
 
 ingress:
