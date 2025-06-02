@@ -328,171 +328,215 @@ fileConfigs:
 
   02_filters.conf: |-
     <label @KUBERNETES>
-          <match kubernetes.var.log.containers.fluentd**>
-            @type relabel
-            @label @FLUENT_LOG
-          </match>
+      <match kubernetes.var.log.containers.fluentd**>
+        @type relabel
+        @label @FLUENT_LOG
+      </match>
 
-          # Bỏ comment nếu muốn ignore logs từ kube-system
-          # <match kubernetes.var.log.containers.**_kube-system_**>
-          #   @type null
-          #   @id ignore_kube_system_logs
-          # </match>
+      # Ignore kube-system logs (uncomment if needed)
+      # <match kubernetes.var.log.containers.**_kube-system_**>
+      #   @type null
+      #   @id ignore_kube_system_logs
+      # </match>
 
-          # Thêm kubernetes metadata
-          <filter kubernetes.**>
-            @type kubernetes_metadata
-            @id filter_kube_metadata
-            skip_labels false
-            skip_container_metadata false
-            skip_namespace_metadata false
-            skip_master_url true
-            annotation_match [".*"]
-            de_dot false
-            de_dot_separator '_'
-          </filter>
+      # Add kubernetes metadata
+      <filter kubernetes.**>
+        @type kubernetes_metadata
+        @id filter_kube_metadata
+        skip_labels false
+        skip_container_metadata false
+        skip_namespace_metadata false
+        skip_master_url true
+        annotation_match [".*"]
+        de_dot false
+        de_dot_separator '_'
+      </filter>
 
-          # Parse JSON logs từ containers trước (nếu có)
-          <filter kubernetes.**>
-            @type parser
-            @id parser_container_logs
-            key_name log
-            reserve_data true
-            remove_key_name_field false
-            emit_invalid_record_to_error false
-            suppress_parse_error_log true
-            <parse>
-              @type json
-              time_key ts
-              time_type float
-              time_format %s
-              keep_time_key true
-            </parse>
-          </filter>
+      # Parse JSON logs first (if any)
+      <filter kubernetes.**>
+        @type parser
+        @id parser_container_logs
+        key_name log
+        reserve_data true
+        remove_key_name_field false
+        emit_invalid_record_to_error false
+        suppress_parse_error_log true
+        <parse>
+          @type json
+          time_key ts
+          time_type float
+          time_format %s
+          keep_time_key true
+        </parse>
+      </filter>
 
-          # Parse httplog bằng record_transformer (đáng tin cậy hơn)
-          <filter kubernetes.**>
-            @type record_transformer
-            @id httplog_parser
-            enable_ruby true
-            <record>
-              # Extract HTTP method
-              http_method ${record["log"] && record["log"].match(/\[httplog\]\s+(\w+)\s+/) ? $1 : nil}
-              
-              # Extract URL  
-              http_url ${record["log"] && record["log"].match(/\[httplog\]\s+\w+\s+(\S+)\s+completed/) ? $1 : nil}
-              
-              # Extract status code
-              http_status_code ${record["log"] && record["log"].match(/status\s+code\s+(\d+)/) ? $1.to_i : nil}
-              
-              # Extract response time
-              http_response_time ${record["log"] && record["log"].match(/in\s+([\d.]+)\s+seconds/) ? $1.to_f : nil}
-              
-              # Extract domain from URL
-              http_domain ${record["log"] && record["log"].match(/https?:\/\/([^\/\s]+)/) ? $1 : nil}
-              
-              # Extract path from URL
-              http_path ${record["log"] && record["log"].match(/https?:\/\/[^\/\s]+(\/[^\s\?]*)/) ? $1 : nil}
-              
-              # Determine request type
-              request_type ${record["log"] && record["log"].match(/\[httplog\]\s+GET\s+/) ? "read" : (record["log"] && record["log"].match(/\[httplog\]\s+(POST|PUT|DELETE|PATCH)\s+/) ? "write" : nil)}
-              
-              # Mark if this is httplog
-              is_httplog ${record["log"] && record["log"].match(/^\[httplog\]/) ? true : false}
-              
-              # Extract general log level
-              parsed_log_level ${record["log"] && record["log"].match(/^\[(\w+)\]/) ? $1 : nil}
-            </record>
-          </filter>
+      # Main httplog parser - improved regex
+      <filter kubernetes.**>
+        @type parser
+        @id httplog_parser
+        key_name log
+        reserve_data true
+        remove_key_name_field false
+        emit_invalid_record_to_error false
+        suppress_parse_error_log true
+        <parse>
+          @type regexp
+          expression /^\[httplog\]\s+(?<http_method>\w+)\s+(?<http_url>\S+)\s+completed\s+with\s+status\s+code\s+(?<http_status_code>\d+)\s+in\s+(?<http_response_time>[\d.]+)\s+seconds$/
+          types http_status_code:integer,http_response_time:float
+        </parse>
+      </filter>
 
-          # Main format transformer
-          <filter kubernetes.**>
-            @type record_transformer
-            @id transformer_main_format
-            enable_ruby true
-            <record>
-              # Giữ nguyên log message gốc
-              message ${record["log"] || record["msg"] || ""}
-              
-              # Xử lý timestamp
-              timestamp ${record.dig("ts") ? Time.at(record["ts"]).utc.strftime('%Y-%m-%dT%H:%M:%S.%3NZ') : time.strftime('%Y-%m-%dT%H:%M:%S.%3NZ')}
-              "@timestamp" ${record.dig("ts") ? Time.at(record["ts"]).utc.strftime('%Y-%m-%dT%H:%M:%S.%3NZ') : time.strftime('%Y-%m-%dT%H:%M:%S.%3NZ')}
-              
-              # Kubernetes metadata
-              kubernetes_namespace ${record.dig("kubernetes", "namespace_name") || "unknown"}
-              kubernetes_pod ${record.dig("kubernetes", "pod_name") || "unknown"}
-              kubernetes_container ${record.dig("kubernetes", "container_name") || "unknown"}
-              
-              # Stream information
-              stream ${record.dig("stream") || "stdout"}
-              
-              # Log source
-              log_source "kubernetes"
-            </record>
-            remove_keys ts
-          </filter>
+      # Extract additional HTTP fields
+      <filter kubernetes.**>
+        @type record_transformer
+        @id httplog_enhancer
+        enable_ruby true
+        <record>
+          # Extract domain and path from URL if httplog exists
+          http_domain ${record["http_url"] ? URI.parse(record["http_url"]).host rescue nil : nil}
+          http_path ${record["http_url"] ? URI.parse(record["http_url"]).path rescue nil : nil}
+          http_scheme ${record["http_url"] ? URI.parse(record["http_url"]).scheme rescue nil : nil}
+          http_port ${record["http_url"] ? URI.parse(record["http_url"]).port rescue nil : nil}
+          
+          # Determine request type
+          request_type ${record["http_method"] ? (record["http_method"] == "GET" ? "read" : "write") : nil}
+          
+          # Mark if this is httplog
+          is_httplog ${record["http_method"] ? true : false}
+          
+          # Extract general log level from any log
+          log_level ${record["log"] && record["log"].match(/^\[(\w+)\]/) ? $1.downcase : "info"}
+          
+          # Parse response time to ms for better analysis
+          http_response_time_ms ${record["http_response_time"] ? (record["http_response_time"] * 1000).round(2) : nil}
+        </record>
+      </filter>
 
-          # Filter đặc biệt cho gorse-worker
-          <filter kubernetes.var.log.containers.gorse-worker**>
-            @type record_transformer
-            @id transformer_gorse_worker
-            enable_ruby true
-            <record>
-              n_complete_users ${record["n_complete_users"]}
-              n_working_users ${record["n_working_users"]}
-              throughput ${record["throughput"]}
-              log_level ${record["level"]}
-              service_type "gorse-worker"
-            </record>
-          </filter>
+      # Main format transformer
+      <filter kubernetes.**>
+        @type record_transformer
+        @id transformer_main_format
+        enable_ruby true
+        <record>
+          # Keep original message
+          message ${record["log"] || record["msg"] || ""}
+          
+          # Handle timestamp
+          timestamp ${record.dig("ts") ? Time.at(record["ts"]).utc.strftime('%Y-%m-%dT%H:%M:%S.%3NZ') : time.strftime('%Y-%m-%dT%H:%M:%S.%3NZ')}
+          "@timestamp" ${record.dig("ts") ? Time.at(record["ts"]).utc.strftime('%Y-%m-%dT%H:%M:%S.%3NZ') : time.strftime('%Y-%m-%dT%H:%M:%S.%3NZ')}
+          
+          # Kubernetes metadata
+          kubernetes_namespace ${record.dig("kubernetes", "namespace_name") || "unknown"}
+          kubernetes_pod ${record.dig("kubernetes", "pod_name") || "unknown"}
+          kubernetes_container ${record.dig("kubernetes", "container_name") || "unknown"}
+          kubernetes_labels ${record.dig("kubernetes", "labels")}
+          
+          # Stream information
+          stream ${record.dig("stream") || "stdout"}
+          
+          # Log source
+          log_source "kubernetes"
+          
+          # Service detection from container name
+          service_name ${record.dig("kubernetes", "container_name") || "unknown"}
+        </record>
+        remove_keys ts,kubernetes,docker
+      </filter>
 
-          # Validation
-          <filter kubernetes.**>
-            @type record_transformer
-            @id transformer_cleanup_validate
-            enable_ruby true
-            <record>
-              _valid ${!record["kubernetes_namespace"].nil? && !record["kubernetes_pod"].nil? && !record["kubernetes_container"].nil?}
-              _has_message ${!record["message"].nil? && !record["message"].empty?}
-            </record>
-          </filter>
+      # Special filter for gorse-worker
+      <filter kubernetes.var.log.containers.gorse-worker**>
+        @type record_transformer
+        @id transformer_gorse_worker
+        enable_ruby true
+        <record>
+          n_complete_users ${record["n_complete_users"]}
+          n_working_users ${record["n_working_users"]}
+          throughput ${record["throughput"]}
+          service_type "gorse-worker"
+        </record>
+      </filter>
 
-          # Filter valid records
-          <filter kubernetes.**>
-            @type grep
-            @id filter_valid_records
-            <and>
-              <regexp>
-                key _valid
-                pattern ^true$
-              </regexp>
-              <regexp>
-                key _has_message
-                pattern ^true$
-              </regexp>
-            </and>
-          </filter>
+      # Add performance categorization for HTTP logs
+      <filter kubernetes.**>
+        @type record_transformer
+        @id performance_categorizer
+        enable_ruby true
+        <record>
+          # Categorize response time performance
+          performance_category ${
+            if record["http_response_time"]
+              case record["http_response_time"]
+              when 0..0.1 then "excellent"
+              when 0.1..0.5 then "good" 
+              when 0.5..1.0 then "acceptable"
+              when 1.0..2.0 then "slow"
+              else "very_slow"
+              end
+            else
+              nil
+            end
+          }
+          
+          # HTTP status category
+          http_status_category ${
+            if record["http_status_code"]
+              case record["http_status_code"]
+              when 200..299 then "success"
+              when 300..399 then "redirect"
+              when 400..499 then "client_error"
+              when 500..599 then "server_error"
+              else "unknown"
+              end
+            else
+              nil
+            end
+          }
+        </record>
+      </filter>
 
-          # Final cleanup
-          <filter kubernetes.**>
-            @type record_modifier
-            @id final_cleanup
-            remove_keys _valid,_has_message,kubernetes,docker
-            # Remove null/empty values
-            <record>
-              _dummy_ ${record.delete_if{|k,v| v.nil? || (v.respond_to?(:empty?) && v.empty?)}}
-            </record>
-            remove_keys _dummy_
-          </filter>
+      # Final validation and cleanup
+      <filter kubernetes.**>
+        @type record_transformer
+        @id final_validation
+        enable_ruby true
+        <record>
+          _valid ${!record["kubernetes_namespace"].nil? && !record["kubernetes_pod"].nil? && !record["kubernetes_container"].nil?}
+          _has_message ${!record["message"].nil? && !record["message"].empty?}
+        </record>
+      </filter>
 
-          <match **>
-            @type relabel
-            @label @DISPATCH
-          </match>
-        </label>
+      # Filter valid records only
+      <filter kubernetes.**>
+        @type grep
+        @id filter_valid_records
+        <and>
+          <regexp>
+            key _valid
+            pattern ^true$
+          </regexp>
+          <regexp>
+            key _has_message
+            pattern ^true$
+          </regexp>
+        </and>
+      </filter>
+
+      # Remove temporary fields
+      <filter kubernetes.**>
+        @type record_modifier
+        @id cleanup_temp_fields
+        remove_keys _valid,_has_message
+      </filter>
+
+      <match **>
+        @type relabel
+        @label @DISPATCH
+      </match>
+    </label>
 
   03_dispatch.conf: |-
     <label @DISPATCH>
+      # Add metrics
       <filter **>
         @type prometheus
         <metric>
@@ -502,6 +546,25 @@ fileConfigs:
           <labels>
             tag ${tag}
             hostname ${hostname}
+          </labels>
+        </metric>
+        <metric>
+          name fluentd_http_requests_total
+          type counter
+          desc Total HTTP requests processed
+          <labels>
+            method ${record['http_method']}
+            status ${record['http_status_code']}
+            service ${record['service_name']}
+          </labels>
+        </metric>
+        <metric>
+          name fluentd_http_request_duration_seconds
+          type histogram
+          desc HTTP request duration
+          <labels>
+            method ${record['http_method']}
+            service ${record['service_name']}
           </labels>
         </metric>
       </filter>
@@ -521,10 +584,24 @@ fileConfigs:
         path ""
         user elastic
         password KyZjD8qkotm70Ci
-        # Don't wait for elastic to start up.
         verify_es_version_at_startup false
-        index_name fluentd
+        # Dynamic index based on service
+        index_name "fluentd-${record['service_name']-%Y.%m.%d}"
         type_name fluentd
+        # Template for better field mapping
+        template_name fluentd_template
+        template_file /fluentd/etc/elasticsearch_template.json
+        # Buffer settings for better performance
+        <buffer time,record.service_name>
+          @type file
+          path /var/log/fluentd-buffers/kubernetes
+          flush_mode interval
+          flush_interval 10s
+          chunk_limit_size 8m
+          queue_limit_length 32
+          retry_max_interval 30
+          retry_forever true
+        </buffer>
       </match>
     </label>
 
