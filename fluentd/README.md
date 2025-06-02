@@ -181,8 +181,8 @@ The `fileConfigs` section is organized by sources -> filters -> destinations. Fl
   <label @OUTPUT>
     <match **>
       @type elasticsearch
-      host "192.168.140.77"
-      port 9200
+      host "172.16.0.225"
+      port 19200
       path ""
       user elastic
       password dangtuan12
