@@ -290,7 +290,6 @@ configMapConfigs: []
 ##
 fileConfigs:
   01_sources.conf: |-
-    ## logs from podman
     <source>
       @type tail
       @id in_tail_container_logs
@@ -299,26 +298,29 @@ fileConfigs:
       pos_file /var/log/fluentd-containers.log.pos
       tag kubernetes.*
       read_from_head true
+      emit_unmatched_lines true
+
       <parse>
         @type multi_format
+
         <pattern>
           format json
           time_key time
           time_type string
-          time_format "%Y-%m-%dT%H:%M:%S.%NZ"
+          time_format %Y-%m-%dT%H:%M:%S.%NZ
           keep_time_key false
         </pattern>
+
         <pattern>
           format regexp
-          expression /^(?<time>.+) (?<stream>stdout|stderr)( (.))? (?<log>.*)$/
-          time_format '%Y-%m-%dT%H:%M:%S.%NZ'
+          expression /^(?<time>.+) (?<stream>stdout|stderr)(\s+[FP])?\s+(?<log>.*)$/
+          time_key time
+          time_format %Y-%m-%dT%H:%M:%S.%NZ
           keep_time_key false
         </pattern>
       </parse>
-      emit_unmatched_lines true
     </source>
 
-    # expose metrics in prometheus format
     <source>
       @type prometheus
       bind 0.0.0.0
@@ -328,16 +330,19 @@ fileConfigs:
 
   02_filters.conf: |-
     <label @KUBERNETES>
+
+      # Tránh log loop Fluentd ghi chính nó
       <match kubernetes.var.log.containers.fluentd**>
         @type relabel
         @label @FLUENT_LOG
       </match>
 
+      # Tùy chọn bỏ log kube-system
       # <match kubernetes.var.log.containers.**_kube-system_**>
       #   @type null
-      #   @id ignore_kube_system_logs
       # </match>
 
+      # Gắn metadata từ Kubernetes API
       <filter kubernetes.**>
         @type kubernetes_metadata
         @id filter_kube_metadata
@@ -347,14 +352,18 @@ fileConfigs:
         skip_master_url true
       </filter>
 
+      # Đẩy tiếp sang dispatch
       <match **>
         @type relabel
         @label @DISPATCH
       </match>
+
     </label>
 
   03_dispatch.conf: |-
     <label @DISPATCH>
+
+      # Đếm metrics dòng log đến từ mọi tag
       <filter **>
         @type prometheus
         <metric>
@@ -368,12 +377,14 @@ fileConfigs:
         </metric>
       </filter>
 
+      # Gửi tiếp đến OUTPUT
       <match **>
         @type relabel
         @label @OUTPUT
       </match>
-    </label>
 
+    </label>
+    
   04_outputs.conf: |-
     <label @OUTPUT>
       <match **>
