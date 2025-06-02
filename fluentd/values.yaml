@@ -379,7 +379,7 @@ fileConfigs:
         @label @OUTPUT
       </match>
 
-  </label>
+    </label>
   04_outputs.conf: |-
     <label @OUTPUT>
       <match **>
