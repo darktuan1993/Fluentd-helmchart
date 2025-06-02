@@ -93,8 +93,11 @@ The `fileConfigs` section is organized by sources -> filters -> destinations. Fl
     pos_file /var/log/fluentd-containers.log.pos
     tag kubernetes.*
     read_from_head true
+    emit_unmatched_lines true
+
     <parse>
       @type multi_format
+
       <pattern>
         format json
         time_key time
@@ -102,46 +105,56 @@ The `fileConfigs` section is organized by sources -> filters -> destinations. Fl
         time_format "%Y-%m-%dT%H:%M:%S.%NZ"
         keep_time_key false
       </pattern>
+
       <pattern>
         format regexp
         expression /^(?<time>.+) (?<stream>stdout|stderr)( (.))? (?<log>.*)$/
-        time_format '%Y-%m-%dT%H:%M:%S.%NZ'
+        time_key time
+        time_format "%Y-%m-%dT%H:%M:%S.%NZ"
         keep_time_key false
       </pattern>
     </parse>
-    emit_unmatched_lines true
   </source>
+
 
 02_filters.conf: |-
   <label @KUBERNETES>
+
+    # Bỏ qua log chính Fluentd để tránh loop
     <match kubernetes.var.log.containers.fluentd**>
       @type relabel
       @label @FLUENT_LOG
     </match>
 
+    # (Không bắt buộc) Bỏ qua log kube-system nếu cần
     # <match kubernetes.var.log.containers.**_kube-system_**>
     #   @type null
     #   @id ignore_kube_system_logs
     # </match>
 
+    # Enrich và chuẩn hóa log
     <filter kubernetes.**>
       @type record_transformer
       enable_ruby
       <record>
-        hostname ${record["kubernetes"]["host"]}
+        hostname ${record["kubernetes"]["host"] || record["host"]}
         raw ${record["log"]}
       </record>
       remove_keys $.kubernetes.host,log
     </filter>
 
+    # Gửi tiếp sang pipeline @DISPATCH
     <match **>
       @type relabel
       @label @DISPATCH
     </match>
   </label>
 
+
 03_dispatch.conf: |-
   <label @DISPATCH>
+
+    # Expose metrics input log count
     <filter **>
       @type prometheus
       <metric>
@@ -155,21 +168,24 @@ The `fileConfigs` section is organized by sources -> filters -> destinations. Fl
       </metric>
     </filter>
 
+    # Chuyển sang OUTPUT cuối cùng
     <match **>
       @type relabel
       @label @OUTPUT
     </match>
+
   </label>
+
 
 04_outputs.conf: |-
   <label @OUTPUT>
     <match **>
       @type elasticsearch
-      host "elasticsearch-master"
+      host "192.168.140.77"
       port 9200
       path ""
       user elastic
-      password changeme
+      password dangtuan12
     </match>
   </label>
 ```
