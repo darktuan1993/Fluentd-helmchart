@@ -331,18 +331,19 @@ fileConfigs:
   02_filters.conf: |-
     <label @KUBERNETES>
 
-      # Tránh log loop Fluentd ghi chính nó
+      # 🛑 Bỏ qua log từ chính Fluentd (tránh loop)
       <match kubernetes.var.log.containers.fluentd**>
         @type relabel
         @label @FLUENT_LOG
       </match>
 
-      # Tùy chọn bỏ log kube-system
+      # ⚙️ (Tùy chọn) Bỏ log kube-system nếu không muốn gửi lên
       # <match kubernetes.var.log.containers.**_kube-system_**>
       #   @type null
+      #   @id ignore_kube_system_logs
       # </match>
 
-      # Gắn metadata từ Kubernetes API
+      # 📌 Gắn metadata từ Kubernetes
       <filter kubernetes.**>
         @type kubernetes_metadata
         @id filter_kube_metadata
@@ -352,7 +353,17 @@ fileConfigs:
         skip_master_url true
       </filter>
 
-      # Đẩy tiếp sang dispatch
+      # 📦 Parse nội dung "log" thành JSON object (nếu là chuỗi JSON)
+      <filter kubernetes.**>
+        @type parser
+        key_name log
+        reserve_data true
+        remove_key_name_field true
+        parse:
+          @type json
+      </filter>
+
+      # 🚚 Chuyển log đến pipeline tiếp theo
       <match **>
         @type relabel
         @label @DISPATCH
@@ -384,7 +395,7 @@ fileConfigs:
       </match>
 
     </label>
-    
+
   04_outputs.conf: |-
     <label @OUTPUT>
       <match **>
