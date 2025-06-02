@@ -319,12 +319,12 @@ fileConfigs:
     </source>
 
     # expose metrics in prometheus format
-    <source>
-      @type prometheus
-      bind 0.0.0.0
-      port 24231
-      metrics_path /metrics
-    </source>
+    # <source>
+    #   @type prometheus
+    #   bind 0.0.0.0
+    #   port 24231
+    #   metrics_path /metrics
+    # </source>
 
   02_filters.conf: |-
     <label @KUBERNETES>
@@ -378,11 +378,11 @@ fileConfigs:
     <label @OUTPUT>
       <match **>
         @type elasticsearch
-        host "elasticsearch-master"
+        host "192.168.140.207"
         port 9200
         path ""
         user elastic
-        password changeme
+        password dangtuan12
         # Don't wait for elastic to start up.
         verify_es_version_at_startup false
       </match>
