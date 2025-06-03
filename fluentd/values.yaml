@@ -316,6 +316,7 @@ fileConfigs:
     </label>
 
 
+
   03_dispatch.conf: |-
     <label @DISPATCH>
       <filter **>
@@ -336,9 +337,8 @@ fileConfigs:
         @label @PROD
       </match>
     </label>
-
   04_outputs.conf: |-
-    <label @OUTPUT>
+    <label @OUTPUT_PROD>
       <match **>
         @type elasticsearch
         host "172.16.0.225"
@@ -351,6 +351,7 @@ fileConfigs:
         logstash_dateformat %Y.%m.%d
       </match>
     </label>
+
 
 ingress:
   enabled: false
