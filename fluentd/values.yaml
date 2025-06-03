@@ -461,10 +461,6 @@ fileConfigs:
           </record>
         </filter>
 
-
-
-
-
         <filter logs.prod-karafka>
           @type parser
           key_name log
@@ -478,25 +474,23 @@ fileConfigs:
 
 
         <filter logs.prod-worker-suggestion>
+          @type record_modifier
+          enable_ruby true
+          <record>
+            log ${record["log"].gsub(/\e\[[0-9;]*m/, '')}
+          </record>
+        </filter>
+
+        <filter logs.prod-worker-suggestion>
           @type parser
           key_name log
           reserve_data true
           remove_key_name_field true
           <parse>
             @type regexp
-            expression /^\s*(?<sql_type>.+?)\s+\((?<duration_ms>[0-9.]+)ms\)\s+(?<query>SELECT.*)$/
+            expression /^(?<sql_type>.+?)\s+\((?<duration_ms>[0-9.]+)ms\)\s+(?<query>SELECT.*)$/
           </parse>
         </filter>
-
-        <!-- Làm sạch field sql_type sau khi parse -->
-        <filter logs.prod-worker-suggestion>
-          @type record_modifier
-          enable_ruby true
-          <record>
-            sql_type ${record["sql_type"].strip}
-          </record>
-        </filter>
-
 
 
 
