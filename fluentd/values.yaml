@@ -427,7 +427,6 @@ fileConfigs:
           @label @FLUENT_LOG
         </match>
 
-        # 🔍 Parse access log Nginx cho riêng prod-admin-fe
         <filter logs.prod-admin-fe>
           @type parser
           key_name log
@@ -440,6 +439,20 @@ fileConfigs:
             time_format %d/%b/%Y:%H:%M:%S %z
           </parse>
         </filter>
+
+        <filter logs.prod-distribution-karafka>
+          @type parser
+          key_name log
+          reserve_data true
+          remove_key_name_field true
+          <parse>
+            @type regexp
+            expression /^(?<log_ts>[^ ]+)\s+pid=(?<pid>\d+)\s+tid=(?<tid>\w+)\s+(?<level>[A-Z]+):\s+(?<message>.*)$/
+            time_key log_ts
+            time_format %Y-%m-%dT%H:%M:%S.%LZ
+          </parse>
+        </filter>
+
 
         # 🔍 Các log khác dạng JSON thì parse như cũ
         <filter logs.**>
