@@ -290,7 +290,6 @@ configMapConfigs: []
 ##
 fileConfigs:
   01_sources.conf: |-
-    ## logs from podman
     <source>
       @type tail
       @id in_tail_prod_logs
@@ -299,7 +298,15 @@ fileConfigs:
       tag prod.*
       read_from_head true
       <parse>
-        @type json
+        @type multi_format
+        <pattern>
+          format json
+        </pattern>
+        <pattern>
+          format regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format %Y-%m-%dT%H:%M:%S.%N
+        </pattern>
       </parse>
     </source>
 
