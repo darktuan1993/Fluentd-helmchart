@@ -578,6 +578,26 @@ fileConfigs:
         verify_es_version_at_startup false
       </match>
 
+      <match logs.gorse-worker-sn>
+        @type elasticsearch
+        index_name gorse-worker-sn-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
+      <match logs.gorse-server-sn>
+        @type elasticsearch
+        index_name gorse-server-sn-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
       <match logs.gorse-server-mkp>
         @type elasticsearch
         index_name gorse-server-mkp-logs
