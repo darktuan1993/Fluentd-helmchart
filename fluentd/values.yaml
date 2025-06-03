@@ -289,14 +289,8 @@ configMapConfigs: []
 ## Fluentd configurations:
 ##
 fileConfigs:
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: fluentd-config
-  namespace: kube-system
-data:
   01_sources.conf: |-
-    ## Thu thập logs từ containers
+    ## logs from podman
     <source>
       @type tail
       @id in_tail_container_logs
@@ -305,30 +299,17 @@ data:
       pos_file /var/log/fluentd-containers.log.pos
       tag kubernetes.*
       read_from_head true
-      refresh_interval 5
-      rotate_wait 5
+
       <parse>
-        @type multi_format
-        <pattern>
-          format json
-          time_key time
-          time_type string
-          time_format "%Y-%m-%dT%H:%M:%S.%NZ"
-          keep_time_key true
-        </pattern>
-        <pattern>
-          format regexp
-          expression /^(?<time>[^\s]+) (?<stream>stdout|stderr) (?<partial_flag>[FP]) (?<log>.*)$/
-          time_format '%Y-%m-%dT%H:%M:%S.%NZ'
-          keep_time_key true
-        </pattern>
+        @type regexp
+        expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+        time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+        keep_time_key true
       </parse>
-      emit_unmatched_lines true
-      enable_watch_timer false
-      enable_stat_watcher false
     </source>
 
-    # Expose metrics cho monitoring
+
+    # expose metrics in prometheus format
     <source>
       @type prometheus
       bind 0.0.0.0
@@ -336,94 +317,26 @@ data:
       metrics_path /metrics
     </source>
 
-    # Monitor fluentd's own logs
-    <source>
-      @type prometheus_monitor
-      <labels>
-        host ${hostname}
-      </labels>
-    </source>
-
   02_filters.conf: |-
     <label @KUBERNETES>
-      # Bỏ qua logs của chính fluentd để tránh loop
       <match kubernetes.var.log.containers.fluentd**>
         @type relabel
         @label @FLUENT_LOG
       </match>
 
-      # Bỏ qua system logs không cần thiết (có thể uncomment nếu cần)
       # <match kubernetes.var.log.containers.**_kube-system_**>
       #   @type null
       #   @id ignore_kube_system_logs
       # </match>
 
-      # Thêm kubernetes metadata
       <filter kubernetes.**>
-        @type kubernetes_metadata
-        @id filter_kube_metadata
-        skip_labels false
-        skip_container_metadata false
-        skip_namespace_metadata false
-        skip_master_url true
-        annotation_match [".*"]
-        allow_orphans true
-        cache_size 1000
-        cache_ttl 3600
-      </filter>
-
-      # Parse JSON logs từ application
-      <filter kubernetes.var.log.containers.prod-notification-api**>
         @type parser
         key_name log
         reserve_data true
-        remove_key_name_field false
-        emit_invalid_record_to_error false
+        remove_key_name_field true
         <parse>
-          @type multi_format
-          <pattern>
-            format json
-            time_key time
-            time_type string
-            time_format "%Y-%m-%dT%H:%M:%S.%NZ"
-          </pattern>
-          <pattern>
-            format regexp
-            expression /^\[(?<component>[^\]]+)\]\s+(?<pid>\d+)\s+-\s+(?<timestamp>[^:]+):\s+(?<level>\w+)\s+\[(?<context>[^\]]+)\]\s+(?<message>.*)$/
-            time_key timestamp
-            time_format "%m/%d/%Y, %I:%M:%S %p"
-          </pattern>
-          <pattern>
-            format none
-          </pattern>
+          @type json
         </parse>
-      </filter>
-
-      # Thêm thông tin bổ sung
-      <filter kubernetes.**>
-        @type record_transformer
-        enable_ruby true
-        auto_typecast true
-        <record>
-          hostname "#{Socket.gethostname}"
-          fluentd_tag ${tag}
-          log_processed_at ${Time.now.iso8601}
-          kubernetes_cluster "production"
-        </record>
-      </filter>
-
-      # Rename và cleanup fields
-      <filter kubernetes.**>
-        @type record_modifier
-        <record>
-          source_type kubernetes
-          log_level ${record.dig("level") || "info"}
-        </record>
-        <replace>
-          key message
-          expression /^(.{1000}).*/
-          replace \1...
-        </replace>
       </filter>
 
       <match **>
@@ -434,7 +347,6 @@ data:
 
   03_dispatch.conf: |-
     <label @DISPATCH>
-      # Metrics cho monitoring
       <filter **>
         @type prometheus
         <metric>
@@ -444,23 +356,10 @@ data:
           <labels>
             tag ${tag}
             hostname ${hostname}
-            namespace ${record.dig("kubernetes", "namespace_name") || "unknown"}
-            pod ${record.dig("kubernetes", "pod_name") || "unknown"}
-          </labels>
-        </metric>
-        <metric>
-          name fluentd_input_status_bytes_total
-          type counter
-          desc The total bytes of incoming records
-          key message
-          <labels>
-            tag ${tag}
-            hostname ${hostname}
           </labels>
         </metric>
       </filter>
 
-      # Buffer và route tới output
       <match **>
         @type relabel
         @label @OUTPUT
@@ -469,120 +368,17 @@ data:
 
   04_outputs.conf: |-
     <label @OUTPUT>
-      # Output chính tới Elasticsearch
-      <match kubernetes.**>
-        @type elasticsearch
-        @id out_es_kubernetes
-        host 172.16.0.225
-        port 19200
-        path ""
-        user elastic
-        password KyZjD8qkotm70Ci
-        
-        # Index configuration
-        index_name fluentd-kubernetes
-        template_name fluentd-kubernetes
-        template_file /fluentd/etc/elasticsearch-template.json
-        template_overwrite true
-        
-        # Performance tuning
-        verify_es_version_at_startup false
-        default_elasticsearch_version 7
-        suppress_type_name true
-        
-        # Buffering
-        <buffer tag,time>
-          @type file
-          path /var/log/fluentd-buffers/kubernetes.buffer
-          flush_mode interval
-          flush_interval 10s
-          flush_thread_count 2
-          flush_at_shutdown true
-          retry_type exponential_backoff
-          retry_wait 1s
-          retry_max_interval 60s
-          retry_timeout 60m
-          queued_chunks_limit_size 32
-          compress gzip
-          
-          # Chunk settings
-          chunk_limit_size 10MB
-          total_limit_size 1GB
-          overflow_action drop_oldest_chunk
-        </buffer>
-        
-        # Error handling
-        <secondary>
-          @type file
-          path /var/log/fluentd-failed-records
-          compress gzip
-        </secondary>
-      </match>
-
-      # Fallback cho logs khác
       <match **>
         @type elasticsearch
-        @id out_es_fallback
-        host 172.16.0.225
+        host "172.16.0.225"
         port 19200
         path ""
         user elastic
         password KyZjD8qkotm70Ci
-        index_name fluentd-fallback
+        # Don't wait for elastic to start up.
         verify_es_version_at_startup false
-        suppress_type_name true
-        
-        <buffer>
-          @type memory
-          flush_mode interval
-          flush_interval 30s
-          retry_type exponential_backoff
-          retry_wait 2s
-          retry_max_interval 30s
-          retry_timeout 30m
-        </buffer>
       </match>
     </label>
-
-  # Handle fluentd's own logs
-    <label @FLUENT_LOG>
-      <match fluent.**>
-        @type null
-      </match>
-    </label>
-
-  # Elasticsearch template
-  elasticsearch-template.json: |-
-    {
-      "index_patterns": ["fluentd-kubernetes-*"],
-      "settings": {
-        "index": {
-          "number_of_shards": 1,
-          "number_of_replicas": 0,
-          "refresh_interval": "30s"
-        }
-      },
-      "mappings": {
-        "properties": {
-          "@timestamp": {
-            "type": "date"
-          },
-          "kubernetes": {
-            "properties": {
-              "namespace_name": {"type": "keyword"},
-              "pod_name": {"type": "keyword"},
-              "container_name": {"type": "keyword"},
-              "labels": {"type": "object"}
-            }
-          },
-          "log": {"type": "text"},
-          "message": {"type": "text"},
-          "level": {"type": "keyword"},
-          "stream": {"type": "keyword"},
-          "time": {"type": "date"}
-        }
-      }
-    }
 
 ingress:
   enabled: false
