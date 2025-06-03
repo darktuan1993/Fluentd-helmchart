@@ -411,6 +411,7 @@ fileConfigs:
         </parse>
       </source>
 
+      ## gorse-server-sn
       <source>
         @type tail
         path /var/log/containers/gorse-server-sn-*.log
@@ -426,6 +427,7 @@ fileConfigs:
         </parse>
       </source>
 
+      ## gorse-worker-sn
       <source>
         @type tail
         path /var/log/containers/gorse-worker-sn-*.log
@@ -440,6 +442,121 @@ fileConfigs:
           keep_time_key true
         </parse>
       </source>
+
+      ## prod-pt
+      <source>
+        @type tail
+        path /var/log/containers/prod-pt-*.log
+        pos_file /var/log/pos/prod-pt.pos
+        tag logs.prod-pt
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
+      ## prod-marketplace
+      <source>
+        @type tail
+        path /var/log/containers/prod-marketplace-*.log
+        pos_file /var/log/pos/prod-marketplace.pos
+        tag logs.prod-marketplace
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
+      ## prod-fe
+      <source>
+        @type tail
+        path /var/log/containers/prod-fe-*.log
+        pos_file /var/log/pos/prod-fe.pos
+        tag logs.prod-fe
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
+      ## prod-worker-marketplace
+      <source>
+        @type tail
+        path /var/log/containers/prod-worker-marketplace-*.log
+        pos_file /var/log/pos/prod-worker-marketplace.pos
+        tag logs.prod-worker-marketplace
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
+      ## prod-notification-web
+      <source>
+        @type tail
+        path /var/log/containers/prod-notification-web-*.log
+        pos_file /var/log/pos/prod-notification-web.pos
+        tag logs.prod-notification-web
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
+      ## prod-worker-pull
+      <source>
+        @type tail
+        path /var/log/containers/prod-worker-pull-*.log
+        pos_file /var/log/pos/prod-worker-pull.pos
+        tag logs.prod-worker-pull
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
+      ## prod-streaming
+      <source>
+        @type tail
+        path /var/log/containers/prod-streaming-*.log
+        pos_file /var/log/pos/prod-streaming.pos
+        tag logs.prod-streaming
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
+
+
 
       ## Expose Prometheus metrics
       <source>
@@ -578,26 +695,6 @@ fileConfigs:
         verify_es_version_at_startup false
       </match>
 
-      <match logs.gorse-worker-sn>
-        @type elasticsearch
-        index_name gorse-worker-sn-logs
-        host 172.16.0.225
-        port 19200
-        user elastic
-        password KyZjD8qkotm70Ci
-        verify_es_version_at_startup false
-      </match>
-
-      <match logs.gorse-server-sn>
-        @type elasticsearch
-        index_name gorse-server-sn-logs
-        host 172.16.0.225
-        port 19200
-        user elastic
-        password KyZjD8qkotm70Ci
-        verify_es_version_at_startup false
-      </match>
-
       <match logs.gorse-server-mkp>
         @type elasticsearch
         index_name gorse-server-mkp-logs
@@ -667,6 +764,97 @@ fileConfigs:
         password KyZjD8qkotm70Ci
         verify_es_version_at_startup false
       </match>
+
+      <match logs.gorse-server-sn>
+        @type elasticsearch
+        index_name gorse-server-sn-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
+      <match logs.gorse-worker-sn>
+        @type elasticsearch
+        index_name gorse-worker-sn-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
+      <match logs.prod-pt>
+        @type elasticsearch
+        index_name prod-pt-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
+      <match logs.prod-marketplace>
+        @type elasticsearch
+        index_name prod-marketplace-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
+      <match logs.prod-fe>
+        @type elasticsearch
+        index_name prod-fe-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
+      <match logs.prod-worker-marketplace>
+        @type elasticsearch
+        index_name prod-worker-marketplace-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
+      <match logs.prod-notification-web>
+        @type elasticsearch
+        index_name prod-notification-web-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
+      <match logs.prod-worker-pull>
+        @type elasticsearch
+        index_name prod-worker-pull-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
+      <match logs.prod-streaming>
+        @type elasticsearch
+        index_name prod-streaming-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
     </label>
 
 
