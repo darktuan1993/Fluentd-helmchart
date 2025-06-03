@@ -406,7 +406,6 @@ fileConfigs:
         user elastic
         password KyZjD8qkotm70Ci
         index_name prod-notification-api-logs
-        logstash_format true
         verify_es_version_at_startup false
       </match>
 
@@ -418,7 +417,6 @@ fileConfigs:
         user elastic
         password KyZjD8qkotm70Ci
         index_name prod-worker-suggestion-logs
-        logstash_format true
         verify_es_version_at_startup false
       </match>
 
@@ -430,7 +428,6 @@ fileConfigs:
         user elastic
         password KyZjD8qkotm70Ci
         index_name gorse-worker-entity-logs
-        logstash_format true
         verify_es_version_at_startup false
       </match>
     </label>
