@@ -411,6 +411,14 @@ fileConfigs:
         </parse>
       </source>
 
+      ## Expose Prometheus metrics
+      <source>
+        @type prometheus
+        bind 0.0.0.0
+        port 24231
+        metrics_path /metrics
+      </source>
+
   02_filters.conf: |-
     <label @KUBERNETES>
       # Bỏ qua log của Fluentd
