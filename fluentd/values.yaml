@@ -375,6 +375,7 @@ fileConfigs:
         path ""
         user elastic
         password KyZjD8qkotm70Ci
+        index_name gorse-worker-entity-logs
         # Don't wait for elastic to start up.
         verify_es_version_at_startup false
       </match>
