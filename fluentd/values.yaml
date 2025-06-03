@@ -414,8 +414,8 @@ fileConfigs:
       <source>
         @type tail
         path /var/log/containers/gorse-server-sn-*.log
-        pos_file /var/log/pos/prod-worker-suggestion.pos
-        tag logs.prod-worker-suggestion
+        pos_file /var/log/pos/gorse-server-sn.pos
+        tag logs.gorse-server-sn
         read_from_head true
         @label @KUBERNETES
         <parse>
@@ -429,8 +429,8 @@ fileConfigs:
       <source>
         @type tail
         path /var/log/containers/gorse-worker-sn-*.log
-        pos_file /var/log/pos/prod-worker-suggestion.pos
-        tag logs.prod-worker-suggestion
+        pos_file /var/log/pos/gorse-worker-sn.pos
+        tag logs.gorse-worker-sn
         read_from_head true
         @label @KUBERNETES
         <parse>
@@ -526,11 +526,6 @@ fileConfigs:
             expression /^(?<sql_type>.+?)\s+\((?<duration_ms>[0-9.]+)ms\)\s+(?<query>SELECT.*)$/
           </parse>
         </filter>
-
-
-
-
-
 
         # 🔍 Các log khác dạng JSON thì parse như cũ
         <filter logs.**>
