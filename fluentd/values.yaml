@@ -293,65 +293,28 @@ fileConfigs:
     ## logs from podman
     <source>
       @type tail
-      @id in_tail_container_logs
-      @label @KUBERNETES
-      path /var/log/containers/*.log
-      pos_file /var/log/fluentd-containers.log.pos
-      tag kubernetes.*
+      @id in_tail_prod_logs
+      path /var/log/containers/prod-*.log
+      pos_file /var/log/fluentd-prod.pos
+      tag prod.*
       read_from_head true
       <parse>
-        @type multi_format
-        <pattern>
-          format json
-          time_key time
-          time_type string
-          time_format "%Y-%m-%dT%H:%M:%S.%NZ"
-          keep_time_key false
-        </pattern>
-        <pattern>
-          format regexp
-          expression /^(?<time>.+) (?<stream>stdout|stderr)( (.))? (?<log>.*)$/
-          time_format '%Y-%m-%dT%H:%M:%S.%NZ'
-          keep_time_key false
-        </pattern>
+        @type json
       </parse>
-      emit_unmatched_lines true
-    </source>
-
-    # expose metrics in prometheus format
-    <source>
-      @type prometheus
-      bind 0.0.0.0
-      port 24231
-      metrics_path /metrics
     </source>
 
   02_filters.conf: |-
-    <label @KUBERNETES>
-      <match kubernetes.var.log.containers.fluentd**>
-        @type relabel
-        @label @FLUENT_LOG
-      </match>
-
-      # <match kubernetes.var.log.containers.**_kube-system_**>
-      #   @type null
-      #   @id ignore_kube_system_logs
-      # </match>
-
-      <filter kubernetes.**>
+    <label @PROD>
+      <filter prod.**>
         @type kubernetes_metadata
-        @id filter_kube_metadata
-        skip_labels false
-        skip_container_metadata false
-        skip_namespace_metadata true
-        skip_master_url true
       </filter>
 
       <match **>
         @type relabel
-        @label @DISPATCH
+        @label @OUTPUT_PROD
       </match>
     </label>
+
 
   03_dispatch.conf: |-
     <label @DISPATCH>
@@ -368,9 +331,9 @@ fileConfigs:
         </metric>
       </filter>
 
-      <match **>
+      <match prod.**>
         @type relabel
-        @label @OUTPUT
+        @label @PROD
       </match>
     </label>
 
@@ -383,8 +346,9 @@ fileConfigs:
         path ""
         user elastic
         password KyZjD8qkotm70Ci
-        # Don't wait for elastic to start up.
-        verify_es_version_at_startup false
+        logstash_format true
+        logstash_prefix prod-logs
+        logstash_dateformat %Y.%m.%d
       </match>
     </label>
 
