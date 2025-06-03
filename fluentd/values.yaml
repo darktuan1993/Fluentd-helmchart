@@ -291,132 +291,132 @@ configMapConfigs: []
 fileConfigs:
   01_sources.conf: |-
     ## Log: prod-notification-api
-    <source>
-      @type tail
-      path /var/log/containers/gorse-master-entity-*.log
-      pos_file /var/log/pos/gorse-master-entity.pos
-      tag logs.gorse-master-entity
-      read_from_head true
-      @label @KUBERNETES
-      <parse>
-        @type regexp
-        expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
-        time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
-        keep_time_key true
-      </parse>
-    </source>
+      <source>
+        @type tail
+        path /var/log/containers/gorse-master-entity-*.log
+        pos_file /var/log/pos/gorse-master-entity.pos
+        tag logs.gorse-master-entity
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
 
-    <source>
-      @type tail
-      path /var/log/containers/gorse-server-mkp-*.log
-      pos_file /var/log/pos/gorse-server-mkp.pos
-      tag logs.gorse-server-mkp
-      read_from_head true
-      @label @KUBERNETES
-      <parse>
-        @type regexp
-        expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
-        time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
-        keep_time_key true
-      </parse>
-    </source>
+      <source>
+        @type tail
+        path /var/log/containers/gorse-server-mkp-*.log
+        pos_file /var/log/pos/gorse-server-mkp.pos
+        tag logs.gorse-server-mkp
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
 
-    <source>
-      @type tail
-      path /var/log/containers/gorse-worker-entity-*.log
-      pos_file /var/log/pos/gorse-worker-entity.pos
-      tag logs.gorse-worker-entity
-      read_from_head true
-      @label @KUBERNETES
-      <parse>
-        @type regexp
-        expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
-        time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
-        keep_time_key true
-      </parse>
-    </source>
+      <source>
+        @type tail
+        path /var/log/containers/gorse-worker-entity-*.log
+        pos_file /var/log/pos/gorse-worker-entity.pos
+        tag logs.gorse-worker-entity
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
 
-    <source>
-      @type tail
-      path /var/log/containers/prod-admin-fe-*.log
-      pos_file /var/log/pos/prod-admin-fe.pos
-      tag logs.prod-admin-fe
-      read_from_head true
-      @label @KUBERNETES
-      <parse>
-        @type regexp
-        expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
-        time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
-        keep_time_key true
-      </parse>
-    </source>
+      <source>
+        @type tail
+        path /var/log/containers/prod-admin-fe-*.log
+        pos_file /var/log/pos/prod-admin-fe.pos
+        tag logs.prod-admin-fe
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
 
-    <source>
-      @type tail
-      path /var/log/containers/prod-distribution-karafka-*.log
-      pos_file /var/log/pos/prod-distribution-karafka.pos
-      tag logs.prod-distribution-karafka
-      read_from_head true
-      @label @KUBERNETES
-      <parse>
-        @type regexp
-        expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
-        time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
-        keep_time_key true
-      </parse>
-    </source>
+      <source>
+        @type tail
+        path /var/log/containers/prod-distribution-karafka-*.log
+        pos_file /var/log/pos/prod-distribution-karafka.pos
+        tag logs.prod-distribution-karafka
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
 
-    <source>
-      @type tail
-      path /var/log/containers/prod-karafka-*.log
-      pos_file /var/log/pos/prod-karafka.pos
-      tag logs.prod-karafka
-      read_from_head true
-      @label @KUBERNETES
-      <parse>
-        @type regexp
-        expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
-        time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
-        keep_time_key true
-      </parse>
-    </source>
+      <source>
+        @type tail
+        path /var/log/containers/prod-karafka-*.log
+        pos_file /var/log/pos/prod-karafka.pos
+        tag logs.prod-karafka
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
 
-    <source>
-      @type tail
-      path /var/log/containers/prod-notification-api-*.log
-      pos_file /var/log/pos/prod-notification-api.pos
-      tag logs.prod-notification-api
-      read_from_head true
-      @label @KUBERNETES
-      <parse>
-        @type regexp
-        expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
-        time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
-        keep_time_key true
-      </parse>
-    </source>
+      <source>
+        @type tail
+        path /var/log/containers/prod-notification-api-*.log
+        pos_file /var/log/pos/prod-notification-api.pos
+        tag logs.prod-notification-api
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
 
-    <source>
-      @type tail
-      path /var/log/containers/prod-worker-suggestion-*.log
-      pos_file /var/log/pos/prod-worker-suggestion.pos
-      tag logs.prod-worker-suggestion
-      read_from_head true
-      @label @KUBERNETES
-      <parse>
-        @type regexp
-        expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
-        time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
-        keep_time_key true
-      </parse>
-    </source>
+      <source>
+        @type tail
+        path /var/log/containers/prod-worker-suggestion-*.log
+        pos_file /var/log/pos/prod-worker-suggestion.pos
+        tag logs.prod-worker-suggestion
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
 
-    <!-- Prometheus metrics -->
-    <source>
-      @type prometheus
-      bind 0.0.0.0
-      port 24231
-    </source>
+      <!-- Prometheus metrics -->
+      <source>
+        @type prometheus
+        bind 0.0.0.0
+        port 24231
+      </source>
 
   02_filters.conf: |-
     <label @KUBERNETES>
