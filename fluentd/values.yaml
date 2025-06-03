@@ -545,11 +545,11 @@ data:
     </label>
 
   # Handle fluentd's own logs
-  <label @FLUENT_LOG>
-    <match fluent.**>
-      @type null
-    </match>
-  </label>
+    <label @FLUENT_LOG>
+      <match fluent.**>
+        @type null
+      </match>
+    </label>
 
   # Elasticsearch template
   elasticsearch-template.json: |-
