@@ -453,6 +453,26 @@ fileConfigs:
           </parse>
         </filter>
 
+        <filter logs.prod-karafka>
+          @type record_modifier
+          enable_ruby true
+          <record>
+            log ${record["log"].gsub(/\e\[[0-9;]*m/, '')}
+          </record>
+        </filter>
+
+        <filter logs.prod-karafka>
+          @type parser
+          key_name log
+          reserve_data true
+          remove_key_name_field true
+          <parse>
+            @type regexp
+            expression /^\[(?<component>[^\]]+)\]\s+(?<sql_type>.+?)\s+\((?<duration_ms>[0-9.]+)ms\)\s+(?<query>SELECT.*)$/
+          </parse>
+        </filter>
+
+
 
         # 🔍 Các log khác dạng JSON thì parse như cũ
         <filter logs.**>
