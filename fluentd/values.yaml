@@ -289,9 +289,8 @@ configMapConfigs: []
 ## Fluentd configurations:
 ##
 fileConfigs:
-  
   01_sources.conf: |-
-##### Gorse entity logs #####
+      ##### Gorse entity logs #####
       <source>
         @type tail
         path /var/log/containers/gorse-master-entity-*.log
@@ -322,7 +321,7 @@ fileConfigs:
         </parse>
       </source>
 
-##### Gorse server-mkp logs #####
+      ##### Gorse server-mkp logs #####
       <source>
         @type tail
         path /var/log/containers/gorse-server-mkp-*.log
@@ -338,7 +337,7 @@ fileConfigs:
         </parse>
       </source>
 
-##### gorse-server-sn #####
+      ##### gorse-server-sn #####
       <source>
         @type tail
         path /var/log/containers/gorse-server-sn-*.log
@@ -354,7 +353,7 @@ fileConfigs:
         </parse>
       </source>
 
-##### gorse-worker-sn #####
+      ##### gorse-worker-sn #####
       <source>
         @type tail
         path /var/log/containers/gorse-worker-sn-*.log
@@ -371,7 +370,7 @@ fileConfigs:
       </source>
 
 
-##### prod-admin-fe #####
+      ##### prod-admin-fe #####
       <source>
         @type tail
         path /var/log/containers/prod-admin-fe-*.log
@@ -387,7 +386,7 @@ fileConfigs:
         </parse>
       </source>
 
-##### prod-distribution-karafka #####
+      ##### prod-distribution-karafka #####
       <source>
         @type tail
         path /var/log/containers/prod-distribution-karafka-*.log
@@ -403,7 +402,7 @@ fileConfigs:
         </parse>
       </source>
 
-##### prod-karafka ######
+      ##### prod-karafka ######
       <source>
         @type tail
         path /var/log/containers/prod-karafka-*.log
@@ -419,7 +418,7 @@ fileConfigs:
         </parse>
       </source>
 
-##### prod-notification-api ######
+      #### prod-notification-api ######
       <source>
         @type tail
         path /var/log/containers/prod-notification-api-*.log
@@ -435,7 +434,7 @@ fileConfigs:
         </parse>
       </source>
 
-##### prod-worker-suggestion ######
+      ##### prod-worker-suggestion ######
       <source>
         @type tail
         path /var/log/containers/prod-worker-suggestion-*.log
@@ -451,7 +450,7 @@ fileConfigs:
         </parse>
       </source>
 
-###### prod-pt ######
+      ###### prod-pt ######
       <source>
         @type tail
         path /var/log/containers/prod-pt-*.log
@@ -467,7 +466,7 @@ fileConfigs:
         </parse>
       </source>
 
-###### prod-marketplace ######
+      ###### prod-marketplace ######
       <source>
         @type tail
         path /var/log/containers/prod-marketplace-*.log
@@ -483,7 +482,7 @@ fileConfigs:
         </parse>
       </source>
 
-###### prod-fe ######
+      ###### prod-fe ######
       <source>
         @type tail
         path /var/log/containers/prod-fe-*.log
@@ -499,7 +498,7 @@ fileConfigs:
         </parse>
       </source>
 
-###### prod-worker-marketplace ######
+      ###### prod-worker-marketplace ######
       <source>
         @type tail
         path /var/log/containers/prod-worker-marketplace-*.log
@@ -515,7 +514,7 @@ fileConfigs:
         </parse>
       </source>
 
-###### prod-notification-web ######
+      ###### prod-notification-web ######
       <source>
         @type tail
         path /var/log/containers/prod-notification-web-*.log
@@ -531,7 +530,7 @@ fileConfigs:
         </parse>
       </source>
 
-###### prod-worker-pull ######
+      ###### prod-worker-pull ######
       <source>
         @type tail
         path /var/log/containers/prod-worker-pull-*.log
@@ -547,7 +546,7 @@ fileConfigs:
         </parse>
       </source>
 
-###### prod-streaming ######
+      ###### prod-streaming ######
       <source>
         @type tail
         path /var/log/containers/prod-streaming-*.log
@@ -563,7 +562,7 @@ fileConfigs:
         </parse>
       </source>
 
-###### content-management ######
+      ###### content-management ######
       <source>
         @type tail
         path /var/log/containers/content-management-*.log
@@ -579,7 +578,7 @@ fileConfigs:
         </parse>
       </source>
 
-###### prod-detection-image ######
+      ###### prod-detection-image ######
       <source>
         @type tail
         path /var/log/containers/prod-detection-image-*.log
@@ -595,7 +594,7 @@ fileConfigs:
         </parse>
       </source>
 
-###### prod-media ######
+      ###### prod-media ######
       <source>
         @type tail
         path /var/log/containers/prod-media-*.log
@@ -611,7 +610,7 @@ fileConfigs:
         </parse>
       </source>
 
-###### prod-worker-notification #####
+      ###### prod-worker-notification #####
       <source>
         @type tail
         path /var/log/containers/prod-worker-notification-*.log
@@ -627,7 +626,7 @@ fileConfigs:
         </parse>
       </source>
 
-###### prod-media-marketplace #####
+      ###### prod-media-marketplace #####
       <source>
         @type tail
         path /var/log/containers/prod-media-marketplace-*.log
@@ -643,7 +642,7 @@ fileConfigs:
         </parse>
       </source>
 
-###### prod-worker-classification #####
+      ###### prod-worker-classification #####
       <source>
         @type tail
         path /var/log/containers/prod-worker-classification-*.log
@@ -659,7 +658,7 @@ fileConfigs:
         </parse>
       </source>
 
-###### third-party #####
+      ###### third-party #####
       <source>
         @type tail
         path /var/log/containers/third-party-*.log
@@ -675,7 +674,7 @@ fileConfigs:
         </parse>
       </source>
 
-###### prod-chat #####
+      ###### prod-chat #####
       <source>
         @type tail
         path /var/log/containers/prod-chat-*.log
@@ -691,7 +690,7 @@ fileConfigs:
         </parse>
       </source>
 
-###### creator-policy #####
+      ###### creator-policy #####
       <source>
         @type tail
         path /var/log/containers/creator-policy-*.log
@@ -707,7 +706,7 @@ fileConfigs:
         </parse>
       </source>
 
-####### Expose Prometheus metrics
+      ####### Expose Prometheus metrics
       <source>
         @type prometheus
         bind 0.0.0.0
