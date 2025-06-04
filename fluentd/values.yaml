@@ -948,13 +948,11 @@ fileConfigs:
       <match logs.prod-web>
         @type elasticsearch
         @id elasticsearch.prod-web
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix prod-web
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name prod-web-logs
         reconnect_on_error true
         reload_on_failure true
@@ -964,13 +962,11 @@ fileConfigs:
       <match logs.gorse-master-entity>
         @type elasticsearch
         @id elasticsearch.gorse-master-entity
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix gorse-master-entity
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name gorse-master-entity-logs
         reconnect_on_error true
         reload_on_failure true
@@ -980,13 +976,11 @@ fileConfigs:
       <match logs.gorse-worker-entity>
         @type elasticsearch
         @id elasticsearch.gorse-worker-entity
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix gorse-worker-entity
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name gorse-worker-entity-logs
         reconnect_on_error true
         reload_on_failure true
@@ -996,13 +990,11 @@ fileConfigs:
       <match logs.gorse-server-mkp>
         @type elasticsearch
         @id elasticsearch.gorse-server-mkp
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix gorse-server-mkp
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name gorse-server-mkp-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1012,13 +1004,11 @@ fileConfigs:
       <match logs.gorse-server-sn>
         @type elasticsearch
         @id elasticsearch.gorse-server-sn
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix gorse-server-sn
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name gorse-server-sn-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1028,13 +1018,11 @@ fileConfigs:
       <match logs.gorse-worker-sn>
         @type elasticsearch
         @id elasticsearch.gorse-worker-sn
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix gorse-worker-sn
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name gorse-worker-sn-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1044,13 +1032,11 @@ fileConfigs:
       <match logs.prod-admin-fe>
         @type elasticsearch
         @id elasticsearch.prod-admin-fe
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix prod-admin-fe
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name prod-admin-fe-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1060,13 +1046,11 @@ fileConfigs:
       <match logs.prod-distribution-karafka>
         @type elasticsearch
         @id elasticsearch.prod-distribution-karafka
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix prod-distribution-karafka
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name prod-distribution-karafka-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1076,13 +1060,11 @@ fileConfigs:
       <match logs.prod-karafka>
         @type elasticsearch
         @id elasticsearch.prod-karafka
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix prod-karafka
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name prod-karafka-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1092,13 +1074,11 @@ fileConfigs:
       <match logs.prod-notification-api>
         @type elasticsearch
         @id elasticsearch.prod-notification-api
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix prod-notification-api
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name prod-notification-api-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1108,13 +1088,11 @@ fileConfigs:
       <match logs.prod-worker-suggestion>
         @type elasticsearch
         @id elasticsearch.prod-worker-suggestion
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix prod-worker-suggestion
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name prod-worker-suggestion-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1124,13 +1102,11 @@ fileConfigs:
       <match logs.prod-pt>
         @type elasticsearch
         @id elasticsearch.prod-pt
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix prod-pt
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name prod-pt-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1140,13 +1116,11 @@ fileConfigs:
       <match logs.prod-marketplace>
         @type elasticsearch
         @id elasticsearch.prod-marketplace
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix prod-marketplace
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name prod-marketplace-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1156,13 +1130,11 @@ fileConfigs:
       <match logs.prod-fe>
         @type elasticsearch
         @id elasticsearch.prod-fe
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix prod-fe
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name prod-fe-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1172,13 +1144,11 @@ fileConfigs:
       <match logs.prod-worker-marketplace>
         @type elasticsearch
         @id elasticsearch.prod-worker-marketplace
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix prod-worker-marketplace
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name prod-worker-marketplace-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1188,13 +1158,11 @@ fileConfigs:
       <match logs.prod-notification-web>
         @type elasticsearch
         @id elasticsearch.prod-notification-web
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix prod-notification-web
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name prod-notification-web-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1204,13 +1172,11 @@ fileConfigs:
       <match logs.prod-worker-pull>
         @type elasticsearch
         @id elasticsearch.prod-worker-pull
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix prod-worker-pull
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name prod-worker-pull-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1220,13 +1186,11 @@ fileConfigs:
       <match logs.prod-streaming>
         @type elasticsearch
         @id elasticsearch.prod-streaming
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix prod-streaming
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name prod-streaming-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1236,13 +1200,11 @@ fileConfigs:
       <match logs.content-management>
         @type elasticsearch
         @id elasticsearch.content-management
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix content-management
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name content-management-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1252,13 +1214,11 @@ fileConfigs:
       <match logs.prod-detection-image>
         @type elasticsearch
         @id elasticsearch.prod-detection-image
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix prod-detection-image
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name prod-detection-image-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1268,13 +1228,11 @@ fileConfigs:
       <match logs.prod-media>
         @type elasticsearch
         @id elasticsearch.prod-media
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix prod-media
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name prod-media-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1284,13 +1242,11 @@ fileConfigs:
       <match logs.prod-worker-notification>
         @type elasticsearch
         @id elasticsearch.prod-worker-notification
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix prod-worker-notification
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name prod-worker-notification-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1300,13 +1256,11 @@ fileConfigs:
       <match logs.prod-media-marketplace>
         @type elasticsearch
         @id elasticsearch.prod-media-marketplace
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix prod-media-marketplace
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name prod-media-marketplace-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1316,13 +1270,11 @@ fileConfigs:
       <match logs.prod-worker-classification>
         @type elasticsearch
         @id elasticsearch.prod-worker-classification
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix prod-worker-classification
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name prod-worker-classification-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1332,13 +1284,11 @@ fileConfigs:
       <match logs.third-party>
         @type elasticsearch
         @id elasticsearch.third-party
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix third-party
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name third-party-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1348,13 +1298,11 @@ fileConfigs:
       <match logs.prod-chat>
         @type elasticsearch
         @id elasticsearch.prod-chat
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix prod-chat
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name prod-chat-logs
         reconnect_on_error true
         reload_on_failure true
@@ -1364,13 +1312,11 @@ fileConfigs:
       <match logs.creator-policy>
         @type elasticsearch
         @id elasticsearch.creator-policy
-        host elasticsearch-master.logging.svc
-        port 9200
-        scheme http
-        logstash_format true
-        include_tag_key true
-        type_name fluentd
-        logstash_prefix creator-policy
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
         index_name creator-policy-logs
         reconnect_on_error true
         reload_on_failure true
