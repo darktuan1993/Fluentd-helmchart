@@ -752,14 +752,6 @@ fileConfigs:
         ##### logs.prod-web #####
 
         <filter logs.prod-web>
-          @type grep
-          <regexp>
-            key log
-            pattern /method=\w+ path=\/.* controller=.* action=.*/
-          </regexp>
-        </filter>
-
-        <filter logs.prod-web>
           @type parser
           key_name log
           reserve_data true
@@ -770,24 +762,6 @@ fileConfigs:
           </parse>
         </filter>
 
-        <filter logs.prod-web>
-          @type grep
-          <regexp>
-            key log
-            pattern /^\[.*\]\s+\w.+\([0-9.]+ms\)\s+(SELECT|INSERT|UPDATE|DELETE)/
-          </regexp>
-        </filter>
-
-        <filter logs.prod-web>
-          @type parser
-          key_name log
-          reserve_data true
-          remove_key_name_field true
-          <parse>
-            @type regexp
-            expression /^\[(?<request_id>[^\]]+)\]\s+(?<component>[^\(]+)\s+\((?<duration_ms>[0-9.]+)ms\)\s+(?<query>(SELECT|INSERT|UPDATE|DELETE).*)$/
-          </parse>
-        </filter>
 
 
         ##### logs.prod-detection-image #####
