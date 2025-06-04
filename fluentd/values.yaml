@@ -705,14 +705,11 @@ fileConfigs:
           remove_key_name_field true
           <parse>
             @type regexp
-            expression /^\[(?<timestamp>[^\]]+)\]\s+"(?<method>\S+)\s(?<url>\S+)"\s+"(?<user_agent>[^"]+)"$/
+            expression /^\[(?<timestamp>[^]]+)\]\s+"(?<method>\S+)\s(?<url>[^"]+)"\s+"(?<user_agent>[^"]+)"$/
             time_key timestamp
             time_format %a %b %d %Y %H:%M:%S GMT%z (%Z)
           </parse>
         </filter>
-
-
-
 
 
         # 🔍 Các log khác dạng JSON thì parse như cũ
