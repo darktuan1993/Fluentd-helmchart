@@ -289,28 +289,14 @@ configMapConfigs: []
 ## Fluentd configurations:
 ##
 fileConfigs:
+  
   01_sources.conf: |-
-    ## Log: prod-notification-api
+##### Gorse entity logs #####
       <source>
         @type tail
         path /var/log/containers/gorse-master-entity-*.log
         pos_file /var/log/pos/gorse-master-entity.pos
         tag logs.gorse-master-entity
-        read_from_head true
-        @label @KUBERNETES
-        <parse>
-          @type regexp
-          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
-          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
-          keep_time_key true
-        </parse>
-      </source>
-
-      <source>
-        @type tail
-        path /var/log/containers/gorse-server-mkp-*.log
-        pos_file /var/log/pos/gorse-server-mkp.pos
-        tag logs.gorse-server-mkp
         read_from_head true
         @label @KUBERNETES
         <parse>
@@ -336,11 +322,12 @@ fileConfigs:
         </parse>
       </source>
 
+##### Gorse server-mkp logs #####
       <source>
         @type tail
-        path /var/log/containers/prod-admin-fe-*.log
-        pos_file /var/log/pos/prod-admin-fe.pos
-        tag logs.prod-admin-fe
+        path /var/log/containers/gorse-server-mkp-*.log
+        pos_file /var/log/pos/gorse-server-mkp.pos
+        tag logs.gorse-server-mkp
         read_from_head true
         @label @KUBERNETES
         <parse>
@@ -351,67 +338,7 @@ fileConfigs:
         </parse>
       </source>
 
-      <source>
-        @type tail
-        path /var/log/containers/prod-distribution-karafka-*.log
-        pos_file /var/log/pos/prod-distribution-karafka.pos
-        tag logs.prod-distribution-karafka
-        read_from_head true
-        @label @KUBERNETES
-        <parse>
-          @type regexp
-          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
-          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
-          keep_time_key true
-        </parse>
-      </source>
-
-      <source>
-        @type tail
-        path /var/log/containers/prod-karafka-*.log
-        pos_file /var/log/pos/prod-karafka.pos
-        tag logs.prod-karafka
-        read_from_head true
-        @label @KUBERNETES
-        <parse>
-          @type regexp
-          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
-          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
-          keep_time_key true
-        </parse>
-      </source>
-
-      <source>
-        @type tail
-        path /var/log/containers/prod-notification-api-*.log
-        pos_file /var/log/pos/prod-notification-api.pos
-        tag logs.prod-notification-api
-        read_from_head true
-        @label @KUBERNETES
-        <parse>
-          @type regexp
-          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
-          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
-          keep_time_key true
-        </parse>
-      </source>
-
-      <source>
-        @type tail
-        path /var/log/containers/prod-worker-suggestion-*.log
-        pos_file /var/log/pos/prod-worker-suggestion.pos
-        tag logs.prod-worker-suggestion
-        read_from_head true
-        @label @KUBERNETES
-        <parse>
-          @type regexp
-          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
-          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
-          keep_time_key true
-        </parse>
-      </source>
-
-      ## gorse-server-sn
+##### gorse-server-sn #####
       <source>
         @type tail
         path /var/log/containers/gorse-server-sn-*.log
@@ -427,7 +354,7 @@ fileConfigs:
         </parse>
       </source>
 
-      ## gorse-worker-sn
+##### gorse-worker-sn #####
       <source>
         @type tail
         path /var/log/containers/gorse-worker-sn-*.log
@@ -443,7 +370,88 @@ fileConfigs:
         </parse>
       </source>
 
-      ## prod-pt
+
+##### prod-admin-fe #####
+      <source>
+        @type tail
+        path /var/log/containers/prod-admin-fe-*.log
+        pos_file /var/log/pos/prod-admin-fe.pos
+        tag logs.prod-admin-fe
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
+##### prod-distribution-karafka #####
+      <source>
+        @type tail
+        path /var/log/containers/prod-distribution-karafka-*.log
+        pos_file /var/log/pos/prod-distribution-karafka.pos
+        tag logs.prod-distribution-karafka
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
+##### prod-karafka ######
+      <source>
+        @type tail
+        path /var/log/containers/prod-karafka-*.log
+        pos_file /var/log/pos/prod-karafka.pos
+        tag logs.prod-karafka
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
+##### prod-notification-api ######
+      <source>
+        @type tail
+        path /var/log/containers/prod-notification-api-*.log
+        pos_file /var/log/pos/prod-notification-api.pos
+        tag logs.prod-notification-api
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
+##### prod-worker-suggestion ######
+      <source>
+        @type tail
+        path /var/log/containers/prod-worker-suggestion-*.log
+        pos_file /var/log/pos/prod-worker-suggestion.pos
+        tag logs.prod-worker-suggestion
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
+###### prod-pt ######
       <source>
         @type tail
         path /var/log/containers/prod-pt-*.log
@@ -459,7 +467,7 @@ fileConfigs:
         </parse>
       </source>
 
-      ## prod-marketplace
+###### prod-marketplace ######
       <source>
         @type tail
         path /var/log/containers/prod-marketplace-*.log
@@ -475,7 +483,7 @@ fileConfigs:
         </parse>
       </source>
 
-      ## prod-fe
+###### prod-fe ######
       <source>
         @type tail
         path /var/log/containers/prod-fe-*.log
@@ -491,7 +499,7 @@ fileConfigs:
         </parse>
       </source>
 
-      ## prod-worker-marketplace
+###### prod-worker-marketplace ######
       <source>
         @type tail
         path /var/log/containers/prod-worker-marketplace-*.log
@@ -507,7 +515,7 @@ fileConfigs:
         </parse>
       </source>
 
-      ## prod-notification-web
+###### prod-notification-web ######
       <source>
         @type tail
         path /var/log/containers/prod-notification-web-*.log
@@ -523,7 +531,7 @@ fileConfigs:
         </parse>
       </source>
 
-      ## prod-worker-pull
+###### prod-worker-pull ######
       <source>
         @type tail
         path /var/log/containers/prod-worker-pull-*.log
@@ -539,7 +547,7 @@ fileConfigs:
         </parse>
       </source>
 
-      ## prod-streaming
+###### prod-streaming ######
       <source>
         @type tail
         path /var/log/containers/prod-streaming-*.log
@@ -555,16 +563,158 @@ fileConfigs:
         </parse>
       </source>
 
+###### content-management ######
+      <source>
+        @type tail
+        path /var/log/containers/content-management-*.log
+        pos_file /var/log/pos/content-management.pos
+        tag logs.content-management
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
 
+###### prod-detection-image ######
+      <source>
+        @type tail
+        path /var/log/containers/prod-detection-image-*.log
+        pos_file /var/log/pos/prod-detection-image.pos
+        tag logs.prod-detection-image
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
 
+###### prod-media ######
+      <source>
+        @type tail
+        path /var/log/containers/prod-media-*.log
+        pos_file /var/log/pos/prod-media.pos
+        tag logs.prod-media
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
 
-      ## Expose Prometheus metrics
+###### prod-worker-notification #####
+      <source>
+        @type tail
+        path /var/log/containers/prod-worker-notification-*.log
+        pos_file /var/log/pos/prod-worker-notification.pos
+        tag logs.prod-worker-notification
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
+###### prod-media-marketplace #####
+      <source>
+        @type tail
+        path /var/log/containers/prod-media-marketplace-*.log
+        pos_file /var/log/pos/prod-media-marketplace.pos
+        tag logs.prod-media-marketplace
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
+###### prod-worker-classification #####
+      <source>
+        @type tail
+        path /var/log/containers/prod-worker-classification-*.log
+        pos_file /var/log/pos/prod-worker-classification.pos
+        tag logs.prod-worker-classification
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
+###### third-party #####
+      <source>
+        @type tail
+        path /var/log/containers/third-party-*.log
+        pos_file /var/log/pos/third-party.pos
+        tag logs.third-party
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
+###### prod-chat #####
+      <source>
+        @type tail
+        path /var/log/containers/prod-chat-*.log
+        pos_file /var/log/pos/prod-chat.pos
+        tag logs.prod-chat
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
+###### creator-policy #####
+      <source>
+        @type tail
+        path /var/log/containers/creator-policy-*.log
+        pos_file /var/log/pos/creator-policy.pos
+        tag logs.creator-policy
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
+####### Expose Prometheus metrics
       <source>
         @type prometheus
         bind 0.0.0.0
         port 24231
         metrics_path /metrics
       </source>
+
 
   02_filters.conf: |-
       <label @KUBERNETES>
@@ -763,6 +913,16 @@ fileConfigs:
         verify_es_version_at_startup false
       </match>
 
+      <match logs.gorse-worker-entity>
+        @type elasticsearch
+        index_name gorse-worker-entity-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
       <match logs.gorse-server-mkp>
         @type elasticsearch
         index_name gorse-server-mkp-logs
@@ -773,9 +933,19 @@ fileConfigs:
         verify_es_version_at_startup false
       </match>
 
-      <match logs.gorse-worker-entity>
+      <match logs.gorse-server-sn>
         @type elasticsearch
-        index_name gorse-worker-entity-logs
+        index_name gorse-server-sn-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
+      <match logs.gorse-worker-sn>
+        @type elasticsearch
+        index_name gorse-worker-sn-logs
         host 172.16.0.225
         port 19200
         user elastic
@@ -826,26 +996,6 @@ fileConfigs:
       <match logs.prod-worker-suggestion>
         @type elasticsearch
         index_name prod-worker-suggestion-logs
-        host 172.16.0.225
-        port 19200
-        user elastic
-        password KyZjD8qkotm70Ci
-        verify_es_version_at_startup false
-      </match>
-
-      <match logs.gorse-server-sn>
-        @type elasticsearch
-        index_name gorse-server-sn-logs
-        host 172.16.0.225
-        port 19200
-        user elastic
-        password KyZjD8qkotm70Ci
-        verify_es_version_at_startup false
-      </match>
-
-      <match logs.gorse-worker-sn>
-        @type elasticsearch
-        index_name gorse-worker-sn-logs
         host 172.16.0.225
         port 19200
         user elastic
@@ -923,7 +1073,87 @@ fileConfigs:
         verify_es_version_at_startup false
       </match>
 
+      <match logs.content-management>
+        @type elasticsearch
+        index_name content-management-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
+      <match logs.prod-detection-image>
+        @type elasticsearch
+        index_name prod-detection-image-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
+      <match logs.prod-media>
+        @type elasticsearch
+        index_name prod-media-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
+      <match logs.prod-worker-notification>
+        @type elasticsearch
+        index_name prod-worker-notification-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
+      <match logs.prod-media-marketplace>
+        @type elasticsearch
+        index_name prod-media-marketplace-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
+      <match logs.prod-worker-classification>
+        @type elasticsearch
+        index_name prod-worker-classification-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
+      <match logs.third-party>
+        @type elasticsearch
+        index_name third-party-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
+
+      <match logs.prod-chat>
+        @type elasticsearch
+        index_name prod-chat-logs
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+      </match>
     </label>
+
 
 
 
