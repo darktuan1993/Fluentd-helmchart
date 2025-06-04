@@ -740,6 +740,28 @@ fileConfigs:
           @label @FLUENT_LOG
         </match>
 
+        <filter logs.prod-web>
+          @type record_modifier
+          enable_ruby true
+          <record>
+            log ${record["log"].gsub(/\e\[[0-9;]*m/, '')}
+          </record>
+        </filter>
+
+        ##### logs.prod-web #####
+
+        <filter logs.prod-web>
+          @type parser
+          key_name log
+          reserve_data true
+          remove_key_name_field true
+          <parse>
+            @type regexp
+            # Ví dụ log:
+            # [ec75d1424aa6e2c384b714ce76ddaf83]  Account Load (1.8ms)  SELECT "accounts".* FROM ...
+            expression /^\[(?<request_id>[^\]]+)\]\s+(?<component>.+?)\s+\((?<duration_ms>[0-9.]+)ms\)\s+(?<query>SELECT.*)$/
+          </parse>
+        </filter>
 
         ##### logs.prod-detection-image #####
         <filter logs.prod-detection-image>
