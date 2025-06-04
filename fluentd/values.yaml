@@ -748,7 +748,16 @@ fileConfigs:
           </record>
         </filter>
 
+
         ##### logs.prod-web #####
+
+        <filter logs.prod-web>
+          @type grep
+          <regexp>
+            key log
+            pattern /method=\w+ path=\/.* controller=.* action=.*/
+          </regexp>
+        </filter>
 
         <filter logs.prod-web>
           @type parser
@@ -757,11 +766,29 @@ fileConfigs:
           remove_key_name_field true
           <parse>
             @type regexp
-            # Ví dụ log:
-            # [ec75d1424aa6e2c384b714ce76ddaf83]  Account Load (1.8ms)  SELECT "accounts".* FROM ...
-            expression /^\[(?<request_id>[^\]]+)\]\s+(?<component>.+?)\s+\((?<duration_ms>[0-9.]+)ms\)\s+(?<query>SELECT.*)$/
+            expression /^\[(?<request_id>[^\]]+)\] method=(?<method>\w+) path=(?<path>[^\s]+) format=(?<format>\w+) controller=(?<controller>[^\s]+) action=(?<action>\w+) status=(?<status>\d+) allocations=(?<allocations>\d+) duration=(?<duration>[0-9.]+) view=(?<view>[0-9.]+) db=(?<db>[0-9.]+)/
           </parse>
         </filter>
+
+        <filter logs.prod-web>
+          @type grep
+          <regexp>
+            key log
+            pattern /^\[.*\]\s+\w.+\([0-9.]+ms\)\s+(SELECT|INSERT|UPDATE|DELETE)/
+          </regexp>
+        </filter>
+
+        <filter logs.prod-web>
+          @type parser
+          key_name log
+          reserve_data true
+          remove_key_name_field true
+          <parse>
+            @type regexp
+            expression /^\[(?<request_id>[^\]]+)\]\s+(?<component>[^\(]+)\s+\((?<duration_ms>[0-9.]+)ms\)\s+(?<query>(SELECT|INSERT|UPDATE|DELETE).*)$/
+          </parse>
+        </filter>
+
 
         ##### logs.prod-detection-image #####
         <filter logs.prod-detection-image>
