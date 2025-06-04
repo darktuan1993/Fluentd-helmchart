@@ -724,7 +724,6 @@ fileConfigs:
         </match>
 
         ##### logs.prod-admin-fe #####
-
         <filter logs.prod-admin-fe>
           @type parser
           key_name log
@@ -739,7 +738,6 @@ fileConfigs:
         </filter>
 
         ##### logs.prod-distribution-karafka #####
-
         <filter logs.prod-distribution-karafka>
           @type parser
           key_name log
@@ -752,8 +750,8 @@ fileConfigs:
             time_format %Y-%m-%dT%H:%M:%S.%LZ
           </parse>
         </filter>
-        #################### logs.prod-karafka ################
 
+        ##### logs.prod-karafka #####
         <filter logs.prod-karafka>
           @type record_modifier
           enable_ruby true
@@ -773,7 +771,7 @@ fileConfigs:
           </parse>
         </filter>
 
-
+        ##### logs.prod-worker-suggestion #####
         <filter logs.prod-worker-suggestion>
           @type record_modifier
           enable_ruby true
@@ -793,8 +791,7 @@ fileConfigs:
           </parse>
         </filter>
 
-         # 🔍 Các log prod-pt
-
+        ##### logs.prod-pt #####
         <filter logs.prod-pt>
           @type record_modifier
           enable_ruby true
@@ -816,8 +813,7 @@ fileConfigs:
           </parse>
         </filter>
 
-          # 🔍 Các log prod-fe
-
+        ##### logs.prod-fe #####
         <filter logs.prod-fe>
           @type parser
           key_name log
@@ -831,9 +827,7 @@ fileConfigs:
           </parse>
         </filter>
 
-
-         # 🔍 Các log prod-streaming
-
+        ##### logs.prod-streaming #####
         <filter logs.prod-streaming>
           @type parser
           key_name log
@@ -845,8 +839,7 @@ fileConfigs:
           </parse>
         </filter>
 
-
-           # 🔍 Các log prod-notification-web     
+        ##### logs.prod-notification-web #####
         <filter logs.prod-notification-web>
           @type parser
           key_name log
@@ -854,7 +847,7 @@ fileConfigs:
           remove_key_name_field true
           <parse>
             @type regexp
-            expression /^\[(?<timestamp>[^]]+)\]\s+"(?<method>\S+)\s(?<url>[^"]+)"\s+"(?<user_agent>[^"]+)"$/
+            expression /^\[(?<timestamp>[^\]]+)\]\s+"(?<method>\S+)\s(?<url>[^"]+)"\s+"(?<user_agent>[^"]+)"$/
             time_key timestamp
             time_format %a %b %d %Y %H:%M:%S GMT%z (%Z)
           </parse>
