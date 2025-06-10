@@ -939,6 +939,7 @@ fileConfigs:
           </parse>
         </filter>
 
+        ##### logs.prod-media #####
         <filter logs.prod-media>
           @type parser
           key_name log
