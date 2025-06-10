@@ -305,9 +305,30 @@ fileConfigs:
           keep_time_key true
         </parse>
       </source>
-
+      ##############################################################################
+      # ███████╗███╗   ██╗████████╗██╗████████╗██╗   ██╗    ███████╗███████╗██████╗ ██╗   ██╗██╗ ██████╗███████╗
+      # ██╔════╝████╗  ██║╚══██╔══╝██║╚══██╔══╝╚██╗ ██╔╝    ██╔════╝██╔════╝██╔══██╗██║   ██║██║██╔════╝██╔════╝
+      # █████╗  ██╔██╗ ██║   ██║   ██║   ██║    ╚████╔╝     ███████╗█████╗  ██████╔╝██║   ██║██║██║     █████╗  
+      # ██╔══╝  ██║╚██╗██║   ██║   ██║   ██║     ╚██╔╝      ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║██║     ██╔══╝  
+      # ███████╗██║ ╚████║   ██║   ██║   ██║      ██║       ███████║███████╗██║  ██║ ╚████╔╝ ██║╚██████╗███████╗
+      # ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝   ╚═╝      ╚═╝       ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝ ╚═════╝╚══════╝      
 
       ##### Gorse entity logs #####
+      <source>
+        @type tail
+        path /var/log/containers/gorse-server-entity-*.log
+        pos_file /var/log/pos/gorse-server-entity.pos
+        tag logs.gorse-server-entity
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
       <source>
         @type tail
         path /var/log/containers/gorse-master-entity-*.log
@@ -328,6 +349,31 @@ fileConfigs:
         path /var/log/containers/gorse-worker-entity-*.log
         pos_file /var/log/pos/gorse-worker-entity.pos
         tag logs.gorse-worker-entity
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
+      ##############################################################################
+
+      # ███╗   ███╗██████╗ ██╗  ██╗    ███████╗███████╗██████╗ ██╗   ██╗██╗ ██████╗███████╗
+      # ████╗ ████║██╔══██╗██║ ██╔╝    ██╔════╝██╔════╝██╔══██╗██║   ██║██║██╔════╝██╔════╝
+      # ██╔████╔██║██████╔╝█████╔╝     ███████╗█████╗  ██████╔╝██║   ██║██║██║     █████╗  
+      # ██║╚██╔╝██║██╔═══╝ ██╔═██╗     ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║██║     ██╔══╝  
+      # ██║ ╚═╝ ██║██║     ██║  ██╗    ███████║███████╗██║  ██║ ╚████╔╝ ██║╚██████╗███████╗
+      # ╚═╝     ╚═╝╚═╝     ╚═╝  ╚═╝    ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝ ╚═════╝╚══════╝
+
+      ##### Gorse master-mkp logs #####
+      <source>
+        @type tail
+        path /var/log/containers/gorse-master-mkp-*.log
+        pos_file /var/log/pos/gorse-master-mkp.pos
+        tag logs.gorse-master-mkp
         read_from_head true
         @label @KUBERNETES
         <parse>
@@ -369,6 +415,14 @@ fileConfigs:
           keep_time_key true
         </parse>
       </source>
+      ##############################################################################
+
+      # ███████╗███╗   ██╗    ███████╗███████╗██████╗ ██╗   ██╗██╗ ██████╗███████╗
+      # ██╔════╝████╗  ██║    ██╔════╝██╔════╝██╔══██╗██║   ██║██║██╔════╝██╔════╝
+      # ███████╗██╔██╗ ██║    ███████╗█████╗  ██████╔╝██║   ██║██║██║     █████╗  
+      # ╚════██║██║╚██╗██║    ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║██║     ██╔══╝  
+      # ███████║██║ ╚████║    ███████║███████╗██║  ██║ ╚████╔╝ ██║╚██████╗███████╗
+      # ╚══════╝╚═╝  ╚═══╝    ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝ ╚═════╝╚══════╝
 
       ##### gorse-server-sn #####
       <source>
@@ -402,7 +456,22 @@ fileConfigs:
         </parse>
       </source>
 
-
+      ##### gorse-master-sn #####
+      <source>
+        @type tail
+        path /var/log/containers/gorse-master-sn-*.log
+        pos_file /var/log/pos/gorse-master-sn.pos
+        tag logs.gorse-master-sn
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+      ##################################################################################################################################
       ##### prod-admin-fe #####
       <source>
         @type tail
@@ -1039,6 +1108,20 @@ fileConfigs:
         request_timeout 30s
       </match>
 
+      <match logs.gorse-server-entity>
+        @type elasticsearch
+        @id elasticsearch.gorse-server-entity
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+        index_name gorse-server-entity-logs
+        reconnect_on_error true
+        reload_on_failure true
+        request_timeout 30s
+      </match>
+
       <match logs.gorse-worker-entity>
         @type elasticsearch
         @id elasticsearch.gorse-worker-entity
@@ -1067,6 +1150,20 @@ fileConfigs:
         request_timeout 30s
       </match>
 
+      <match logs.gorse-master-mkp>
+        @type elasticsearch
+        @id elasticsearch.gorse-master-mkp
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+        index_name gorse-master-mkp-logs
+        reconnect_on_error true
+        reload_on_failure true
+        request_timeout 30s
+      </match>
+
       <match logs.gorse-worker-mkp>
         @type elasticsearch
         @id elasticsearch.gorse-worker-mkp
@@ -1081,6 +1178,20 @@ fileConfigs:
         request_timeout 30s
       </match>
 
+
+      <match logs.gorse-master-sn>
+        @type elasticsearch
+        @id elasticsearch.gorse-master-sn
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+        index_name gorse-master-sn-logs
+        reconnect_on_error true
+        reload_on_failure true
+        request_timeout 30s
+      </match>
 
       <match logs.gorse-server-sn>
         @type elasticsearch
@@ -1109,6 +1220,7 @@ fileConfigs:
         reload_on_failure true
         request_timeout 30s
       </match>
+
 
       <match logs.prod-admin-fe>
         @type elasticsearch
