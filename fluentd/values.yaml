@@ -354,6 +354,22 @@ fileConfigs:
         </parse>
       </source>
 
+      ##### gorse-worker-mkp #####
+      <source>
+        @type tail
+        path /var/log/containers/gorse-worker-mkp-*.log
+        pos_file /var/log/pos/gorse-worker-mkp.pos
+        tag logs.gorse-worker-mkp
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>
+
       ##### gorse-server-sn #####
       <source>
         @type tail
@@ -1050,6 +1066,21 @@ fileConfigs:
         reload_on_failure true
         request_timeout 30s
       </match>
+
+      <match logs.gorse-worker-mkp>
+        @type elasticsearch
+        @id elasticsearch.gorse-worker-mkp
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+        index_name gorse-worker-mkp-logs
+        reconnect_on_error true
+        reload_on_failure true
+        request_timeout 30s
+      </match>
+
 
       <match logs.gorse-server-sn>
         @type elasticsearch
