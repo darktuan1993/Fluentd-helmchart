@@ -612,17 +612,20 @@ fileConfigs:
       </source>
 
       ###### prod-media ######
-      <filter logs.prod-media>
-        @type parser
-        key_name log
-        reserve_data true
-        remove_key_name_field true
+      <source>
+        @type tail
+        path /var/log/containers/prod-media-*.log
+        pos_file /var/log/pos/prod-media.pos
+        tag logs.prod-media
+        read_from_head true
+        @label @KUBERNETES
         <parse>
           @type regexp
-          expression /^\[(?<request_id>[^\]]+)\] method=(?<method>\w+) path=(?<path>[^\s]+) format=(?<format>\w+) controller=(?<controller>[^\s]+) action=(?<action>[^\s]+) status=(?<status>\d+) allocations=(?<allocations>\d+) duration=(?<duration>[0-9.]+) view=(?<view>[0-9.]+) db=(?<db>[0-9.]+)/
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
         </parse>
-      </filter>
-
+      </source>
 
       ###### prod-worker-notification #####
       <source>
@@ -935,6 +938,19 @@ fileConfigs:
             time_format %a %b %d %Y %H:%M:%S GMT%z (%Z)
           </parse>
         </filter>
+
+        <filter logs.prod-media>
+          @type parser
+          key_name log
+          reserve_data true
+          remove_key_name_field true
+          <parse>
+            @type regexp
+            expression /^\[(?<request_id>[^\]]+)\] method=(?<method>\w+) path=(?<path>[^\s]+) format=(?<format>\w+) controller=(?<controller>[^\s]+) action=(?<action>[^\s]+) status=(?<status>\d+) allocations=(?<allocations>\d+) duration=(?<duration>[0-9.]+) view=(?<view>[0-9.]+) db=(?<db>[0-9.]+)/
+          </parse>
+        </filter>
+
+
 
 
         # 🔍 Các log khác dạng JSON thì parse như cũ
