@@ -1051,8 +1051,8 @@ fileConfigs:
           @type rewrite_tag_filter
           <rule>
             key log
-            pattern /\[httplog\]/
-            tag logs.prod-media.httplog
+            pattern /\[(httplog|paperclip)\]/
+            tag logs.prod-media.http_and_paper
           </rule>
           <rule>
             key log
@@ -1061,17 +1061,20 @@ fileConfigs:
           </rule>
         </match>
 
+
+
         # 3. Parse HTTP log
-        <filter logs.prod-media.httplog>
+        <filter logs.prod-media.http_and_paper>
           @type parser
           key_name log
           reserve_data true
           remove_key_name_field true
           <parse>
             @type regexp
-            expression /^\[(?<request_id>[^\]]+)\] \[httplog\] (?<method>\w+) (?<url>\S+) completed with status code (?<status>\d+) in (?<duration>[\d.]+) seconds$/
+            expression /^\[(?<request_id>[^\]]+)\] \[(?<type>[^\]]+)\] (?<message>.+)$/
           </parse>
         </filter>
+
 
         # 4. Parse API log
         <filter logs.prod-media.api>
