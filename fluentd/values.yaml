@@ -964,74 +964,26 @@ fileConfigs:
 
 
         ##### logs.prod-pt #####
-        # Loại bỏ ANSI color codes
         <filter logs.prod-pt>
           @type record_modifier
+          enable_ruby true
           <record>
             log ${record["log"].gsub(/\e\[[0-9;]*m/, '')}
           </record>
         </filter>
 
-        # Route logs dựa trên pattern
-        <match logs.prod-pt>
-          @type rewrite_tag_filter
-          <rule>
-            key log
-            pattern /\[httplog\]/
-            tag logs.prod-pt.httplog
-          </rule>
-          <rule>
-            key log
-            pattern /method=/
-            tag logs.prod-pt.api
-          </rule>
-        </match>
-
-        # Parse HTTP logs (kiểu 2)
-        <filter logs.prod-pt.httplog>
+        <filter logs.prod-pt>
           @type parser
           key_name log
           reserve_data true
           remove_key_name_field true
           <parse>
             @type regexp
-            expression /^\[(?<request_id>[^\]]+)\] \[httplog\] (?<method>\w+) (?<url>[^\s]+) completed with status code (?<status>\d+) in (?<duration>[\d.]+) seconds$/
+            expression /^\[(?<host>[^\]]+)\] (?<log_ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+)\s+(?<level>\w+): (?<remote_ip>[^ ]+) - - \[(?<timestamp>[^\]]+)\] "(?<method>[A-Z]+) (?<url>[^ ]+) (?<protocol>[^"]+)" (?<status>\d{3}) (?<size>\d+|-) "(?<referrer>[^"]*)" "(?<user_agent>[^"]*)"/
+            time_key log_ts
+            time_format %Y-%m-%d %H:%M:%S.%L
           </parse>
         </filter>
-
-        # Parse API logs (kiểu 1)
-        <filter logs.prod-pt.api>
-          @type parser
-          key_name log
-          reserve_data true
-          remove_key_name_field true
-          <parse>
-            @type regexp
-            expression /^\[(?<request_id>[^\]]+)\] method=(?<method>\w+) path=(?<path>[^\s]+) format=(?<format>\w+) controller=(?<controller>[^\s]+) action=(?<action>\w+) status=(?<status>\d+) allocations=(?<allocations>\d+) duration=(?<duration>[\d.]+) view=(?<view>[\d.]+) db=(?<db>[\d.]+)$/
-          </parse>
-        </filter>
-
-        # ##### logs.prod-pt #####
-        # <filter logs.prod-pt>
-        #   @type record_modifier
-        #   enable_ruby true
-        #   <record>
-        #     log ${record["log"].gsub(/\e\[[0-9;]*m/, '')}
-        #   </record>
-        # </filter>
-
-        # <filter logs.prod-pt>
-        #   @type parser
-        #   key_name log
-        #   reserve_data true
-        #   remove_key_name_field true
-        #   <parse>
-        #     @type regexp
-        #     expression /^\[(?<host>[^\]]+)\] (?<log_ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+)\s+(?<level>\w+): (?<remote_ip>[^ ]+) - - \[(?<timestamp>[^\]]+)\] "(?<method>[A-Z]+) (?<url>[^ ]+) (?<protocol>[^"]+)" (?<status>\d{3}) (?<size>\d+|-) "(?<referrer>[^"]*)" "(?<user_agent>[^"]*)"/
-        #     time_key log_ts
-        #     time_format %Y-%m-%d %H:%M:%S.%L
-        #   </parse>
-        # </filter>
 
 
         ##### logs.prod-fe #####
@@ -1075,18 +1027,63 @@ fileConfigs:
         </filter>
 
         ##### logs.prod-media #####
+        # <filter logs.prod-media>
+        #   @type parser
+        #   key_name log
+        #   reserve_data true
+        #   remove_key_name_field true
+        #   <parse>
+        #     @type regexp
+        #     expression /^\[(?<request_id>[^\]]+)\] method=(?<method>\w+) path=(?<path>[^\s]+) format=(?<format>\w+) controller=(?<controller>[^\s]+) action=(?<action>[^\s]+) status=(?<status>\d+) allocations=(?<allocations>\d+) duration=(?<duration>[0-9.]+) view=(?<view>[0-9.]+) db=(?<db>[0-9.]+)/
+        #   </parse>
+        # </filter>
+
+        # 1. Loại bỏ ANSI color codes
         <filter logs.prod-media>
+          @type record_modifier
+          <record>
+            log ${record["log"].gsub(/\e\[[0-9;]*m/, '')}
+          </record>
+        </filter>
+
+        # 2. Phân loại log theo pattern
+        <match logs.prod-media>
+          @type rewrite_tag_filter
+          <rule>
+            key log
+            pattern /\[httplog\]/
+            tag logs.prod-media.httplog
+          </rule>
+          <rule>
+            key log
+            pattern /method=/
+            tag logs.prod-media.api
+          </rule>
+        </match>
+
+        # 3. Parse HTTP log
+        <filter logs.prod-media.httplog>
           @type parser
           key_name log
           reserve_data true
           remove_key_name_field true
           <parse>
             @type regexp
-            expression /^\[(?<request_id>[^\]]+)\] method=(?<method>\w+) path=(?<path>[^\s]+) format=(?<format>\w+) controller=(?<controller>[^\s]+) action=(?<action>[^\s]+) status=(?<status>\d+) allocations=(?<allocations>\d+) duration=(?<duration>[0-9.]+) view=(?<view>[0-9.]+) db=(?<db>[0-9.]+)/
+            expression /^\[(?<request_id>[^\]]+)\] \[httplog\] (?<method>\w+) (?<url>\S+) completed with status code (?<status>\d+) in (?<duration>[\d.]+) seconds$/
           </parse>
         </filter>
 
-
+        # 4. Parse API log
+        <filter logs.prod-media.api>
+          @type parser
+          key_name log
+          reserve_data true
+          remove_key_name_field true
+          <parse>
+            @type regexp
+            expression /^\[(?<request_id>[^\]]+)\] method=(?<method>\w+) path=(?<path>\S+) format=(?<format>\w+) controller=(?<controller>\S+) action=(?<action>\S+) status=(?<status>\d+) allocations=(?<allocations>\d+) duration=(?<duration>[\d.]+) view=(?<view>[\d.]+) db=(?<db>[\d.]+)$/
+          </parse>
+        </filter>
 
 
         # 🔍 Các log khác dạng JSON thì parse như cũ
