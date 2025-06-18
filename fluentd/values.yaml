@@ -962,7 +962,6 @@ fileConfigs:
           </parse>
         </filter>
 
-
         ##### logs.prod-pt #####
         <filter logs.prod-pt>
           @type record_modifier
@@ -1026,7 +1025,7 @@ fileConfigs:
           </parse>
         </filter>
 
-        #### logs.prod-media #####
+        ##### logs.prod-media #####
         <filter logs.prod-media>
           @type parser
           key_name log
@@ -1037,6 +1036,8 @@ fileConfigs:
             expression /^\[(?<request_id>[^\]]+)\] method=(?<method>\w+) path=(?<path>[^\s]+) format=(?<format>\w+) controller=(?<controller>[^\s]+) action=(?<action>[^\s]+) status=(?<status>\d+) allocations=(?<allocations>\d+) duration=(?<duration>[0-9.]+) view=(?<view>[0-9.]+) db=(?<db>[0-9.]+)/
           </parse>
         </filter>
+
+
 
 
         # 🔍 Các log khác dạng JSON thì parse như cũ
