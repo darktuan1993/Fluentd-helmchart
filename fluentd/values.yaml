@@ -1044,10 +1044,19 @@ fileConfigs:
           reserve_data true
           remove_key_name_field true
           <parse>
-            @type regexp
-            expression /^\[(?<request_id>[^\]]+)\](?: \[(?<type>\w+)\])?(?: (?<method>\w+))?(?: (?<url>https?:\/\/[^\s]+))?(?: completed with status code (?<status>\d+))?(?: in (?<duration>[\d.]+) seconds)?(?: saving (?<saved_file>[^\s]+))?(?: method=(?<alt_method>\w+) path=(?<path>[^\s]+) format=(?<format>\w+) controller=(?<controller>[^\s]+) action=(?<action>[^\s]+) status=(?<api_status>\d+) allocations=(?<allocations>\d+) duration=(?<api_duration>[\d.]+) view=(?<view>[\d.]+) db=(?<db>[\d.]+))?/
+            @type multi_format
+
+            <pattern>
+              format regexp
+              expression /^\[(?<request_id>[^\]]+)\](?: \[(?<type>\w+)\])?(?: (?<method>\w+))?(?: (?<url>https?:\/\/[^\s]+))?(?: completed with status code (?<status>\d+))?(?: in (?<duration>[\d.]+) seconds)?(?: saving (?<saved_file>[^\s]+))?(?: method=(?<alt_method>\w+) path=(?<path>[^\s]+) format=(?<format>\w+) controller=(?<controller>[^\s]+) action=(?<action>[^\s]+) status=(?<api_status>\d+) allocations=(?<allocations>\d+) duration=(?<api_duration>[\d.]+) view=(?<view>[\d.]+) db=(?<db>[\d.]+))?/
+            </pattern>
+
+            <pattern>
+              format none
+            </pattern>
           </parse>
         </filter>
+
 
 
 
