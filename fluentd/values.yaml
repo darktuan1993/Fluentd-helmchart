@@ -387,7 +387,7 @@ fileConfigs:
         user elastic
         password KyZjD8qkotm70Ci
         verify_es_version_at_startup false
-        index_name prod-media-logs
+        index_name sn-media-logs
         reconnect_on_error true
         reload_on_failure true
         request_timeout 30s
