@@ -325,17 +325,17 @@ fileConfigs:
           @label @FLUENT_LOG
         </match>
  
-        ##### logs.sn-media #####
-        <filter logs.sn-media>
-          @type parser
-          key_name log
-          reserve_data true
-          remove_key_name_field true
-          <parse>
-            @type regexp
-            expression /^\[(?<request_id>[^\]]+)\] method=(?<method>\w+) path=(?<path>[^\s]+) format=(?<format>\w+) controller=(?<controller>[^\s]+) action=(?<action>[^\s]+) status=(?<status>\d+) allocations=(?<allocations>\d+) duration=(?<duration>[0-9.]+) view=(?<view>[0-9.]+) db=(?<db>[0-9.]+)/
-          </parse>
-        </filter>
+        # ##### logs.sn-media #####
+        # <filter logs.sn-media>
+        #   @type parser
+        #   key_name log
+        #   reserve_data true
+        #   remove_key_name_field true
+        #   <parse>
+        #     @type regexp
+        #     expression /^\[(?<request_id>[^\]]+)\] method=(?<method>\w+) path=(?<path>[^\s]+) format=(?<format>\w+) controller=(?<controller>[^\s]+) action=(?<action>[^\s]+) status=(?<status>\d+) allocations=(?<allocations>\d+) duration=(?<duration>[0-9.]+) view=(?<view>[0-9.]+) db=(?<db>[0-9.]+)/
+        #   </parse>
+        # </filter>
 
         # 🔍 Các log khác dạng JSON thì parse như cũ
         <filter logs.**>
