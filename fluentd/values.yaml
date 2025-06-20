@@ -318,42 +318,39 @@ fileConfigs:
 
 
   02_filters.conf: |-
-    <label @KUBERNETES>
-      # Bỏ qua log của Fluentd
-      <match logs.fluentd**>
-        @type relabel
-        @label @FLUENT_LOG
-      </match>
+      <label @KUBERNETES>
+        # Bỏ qua log của Fluentd
+        <match logs.fluentd**>
+          @type relabel
+          @label @FLUENT_LOG
+        </match>
 
-      # 1️⃣ Parse trường 'message' (chuyên cho logs.sn-media kiểu bạn gửi)
-      <filter logs.sn-media>
-        @type parser
-        key_name message
-        reserve_data true
-        remove_key_name_field true
-        <parse>
-          @type json
-        </parse>
-      </filter>
+        <filter logs.sn-media>
+          @type parser
+          key_name message
+          reserve_data true
+          remove_key_name_field true
+          <parse>
+            @type json
+          </parse>
+        </filter>
 
-      # 2️⃣ Parse log khác có dạng JSON (dành cho các app khác - ví dụ log nằm ở key 'log')
-      <filter logs.**>
-        @type parser
-        key_name log
-        reserve_data true
-        remove_key_name_field true
-        <parse>
-          @type json
-        </parse>
-      </filter>
+        # 🔍 Các log khác dạng JSON thì parse như cũ
+        <filter logs.**>
+          @type parser
+          key_name log
+          reserve_data true
+          remove_key_name_field true
+          <parse>
+            @type json
+          </parse>
+        </filter>
 
-      # Đẩy sang pipeline tiếp theo
-      <match **>
-        @type relabel
-        @label @DISPATCH
-      </match>
-    </label>
-
+        <match **>
+          @type relabel
+          @label @DISPATCH
+        </match>
+      </label>
 
 
   03_dispatch.conf: |-
@@ -387,7 +384,7 @@ fileConfigs:
         user elastic
         password KyZjD8qkotm70Ci
         verify_es_version_at_startup false
-        index_name sn-media-logs
+        index_name prod-media-logs
         reconnect_on_error true
         reload_on_failure true
         request_timeout 30s
