@@ -330,29 +330,6 @@ fileConfigs:
           </parse>
         </filter>
 
-        # Gán field, field2 dựa trên event (nếu có), nếu không thì giữ nguyên
-        <filter logs.sn-media>
-          @type record_transformer
-          enable_ruby true
-          <record>
-            # field lấy là "event", nếu không có thì để trống
-            field ${record['event'] ? '"event"' : ''}
-            # field2 lấy giá trị event nếu có (hoặc bất cứ trường nào bạn muốn), nếu không thì để ""
-            field2 ${record['event'] ? '"' + record['event'] + '"' : (record['log_type'] ? '"' + record['log_type'] + '"' : '')}
-            # Giữ message là message gốc (nếu JSON thì đã parse, nếu text thì vẫn nguyên)
-            message ${record['message']}
-          </record>
-        </filter>
-
-        # Optional: Remove các trường phụ khác nếu muốn clean (chỉ giữ Time, field, field2, message)
-        <filter logs.sn-media>
-          @type record_transformer
-          <record>
-            uuid ${record['uuid']}
-          </record>
-          remove_keys uuid,tag,log_type,sql,controller,action,event,status,duration,name # xóa bớt các trường thừa
-        </filter>
-
         <match **>
           @type relabel
           @label @DISPATCH
