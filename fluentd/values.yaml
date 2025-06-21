@@ -319,45 +319,46 @@ fileConfigs:
 
   02_filters.conf: |-
       <label @KUBERNETES>
-        # Bước 1: parse trường log/message là JSON nếu có
-        <filter logs.sn-media>
-          @type parser
-          key_name log
-          reserve_data true
-          remove_key_name_field true
-          <parse>
-            @type json
-          </parse>
-        </filter>
-
-        # Bước 2: Nếu trường 'message' lại là 1 JSON string, parse tiếp
+        # Nếu message là JSON, parse tiếp ra các trường phụ
         <filter logs.sn-media>
           @type parser
           key_name message
           reserve_data true
-          remove_key_name_field true
+          remove_key_name_field false
           <parse>
             @type json
           </parse>
         </filter>
 
-        # Bước 3: Nếu trường message vẫn còn text dạng key=value, hoặc SQL, có thể thêm parser regexp nữa (nếu thực sự cần)
-        # <filter logs.sn-media>
-        #   @type parser
-        #   key_name message
-        #   reserve_data true
-        #   remove_key_name_field false
-        #   <parse>
-        #     @type regexp
-        #     expression /.../  # tuỳ mẫu
-        #   </parse>
-        # </filter>
+        # Gán field, field2 dựa trên event (nếu có), nếu không thì giữ nguyên
+        <filter logs.sn-media>
+          @type record_transformer
+          enable_ruby true
+          <record>
+            # field lấy là "event", nếu không có thì để trống
+            field ${record['event'] ? '"event"' : ''}
+            # field2 lấy giá trị event nếu có (hoặc bất cứ trường nào bạn muốn), nếu không thì để ""
+            field2 ${record['event'] ? '"' + record['event'] + '"' : (record['log_type'] ? '"' + record['log_type'] + '"' : '')}
+            # Giữ message là message gốc (nếu JSON thì đã parse, nếu text thì vẫn nguyên)
+            message ${record['message']}
+          </record>
+        </filter>
+
+        # Optional: Remove các trường phụ khác nếu muốn clean (chỉ giữ Time, field, field2, message)
+        <filter logs.sn-media>
+          @type record_transformer
+          <record>
+            uuid ${record['uuid']}
+          </record>
+          remove_keys uuid,tag,log_type,sql,controller,action,event,status,duration,name # xóa bớt các trường thừa
+        </filter>
 
         <match **>
           @type relabel
           @label @DISPATCH
         </match>
       </label>
+
 
 
   03_dispatch.conf: |-
