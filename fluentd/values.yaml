@@ -318,52 +318,36 @@ fileConfigs:
 
 
   02_filters.conf: |-
-      <label @KUBERNETES>
-        # Bỏ qua log của Fluentd
-        <match logs.fluentd**>
-          @type relabel
-          @label @FLUENT_LOG
-        </match>
+      <filter logs.sn-media>
+        @type record_transformer
+        enable_ruby true
+        <record>
+          uuid ${record["log"] =~ /^\[([a-z0-9\-]+)\]/ ? $1 : nil}
+          # Tách phần message thực sự (sau uuid, nhãn phụ)
+          msg_body ${record["log"].gsub(/^\[[a-z0-9\-]+\](\s*\[[^\]]+\])?\s*/, '')}
+        </record>
+      </filter>
 
-        # 1️⃣ Tách uuid và phần message thực sự
-        <filter logs.sn-media>
-          @type record_transformer
-          enable_ruby true
-          <record>
-            uuid ${record["log"] =~ /^\[([a-f0-9]{32})\]/ ? $1 : (record["log"] =~ /^\[([a-z0-9\-]+)\]/ ? $1 : nil)}
-            message_body ${record["log"].gsub(/^\[[a-z0-9\-]+\](\s*\[[^\]]+\])?\s*/, '')}
-          </record>
-        </filter>
+      <filter logs.sn-media>
+        @type parser
+        key_name msg_body
+        reserve_data true
+        remove_key_name_field true
+        <parse>
+          @type json
+        </parse>
+      </filter>
 
-        # 2️⃣ Cố gắng parse message_body thành JSON, nếu thất bại thì lưu sang trường raw_message
-        <filter logs.sn-media>
-          @type parser
-          key_name message_body
-          reserve_data true
-          remove_key_name_field true
-          <parse>
-            @type json
-            # Nếu parse lỗi (log text thường), sẽ không sinh ra các trường JSON
-          </parse>
-        </filter>
-
-        # 3️⃣ Nếu vẫn chưa có trường JSON, chuyển message_body sang raw_message
-        <filter logs.sn-media>
-          @type record_transformer
-          enable_ruby true
-          <record>
-            raw_message ${record.has_key?("event") ? nil : record["message_body"]}
-            log_type ${record.has_key?("event") ? (record["log_type"] || "json") : "raw"}
-          </record>
-          remove_keys message_body
-        </filter>
-
-        <match **>
-          @type relabel
-          @label @DISPATCH
-        </match>
-      </label>
-
+      <filter logs.sn-media>
+        @type record_transformer
+        enable_ruby true
+        <record>
+          log_type ${record.has_key?("event") ? "json" : "plain"}
+          raw_message ${record.has_key?("event") ? nil : record["msg_body"]}
+        </record>
+        remove_keys msg_body
+      </filter>
+      
   03_dispatch.conf: |-
     <label @DISPATCH>
       <filter **>
