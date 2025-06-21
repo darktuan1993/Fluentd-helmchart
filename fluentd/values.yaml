@@ -319,25 +319,10 @@ fileConfigs:
 
   02_filters.conf: |-
       <label @KUBERNETES>
-        # Bỏ qua log của Fluentd
-        <match logs.fluentd**>
-          @type relabel
-          @label @FLUENT_LOG
-        </match>
-
-        <filter logs.sn-media>
-          @type record_transformer
-          enable_ruby true
-          <record>
-            uuid ${record["log"] =~ /^\[([a-z0-9\-]+)\]/ ? $1 : nil}
-            # Tách phần message thực sự (sau uuid, nhãn phụ)
-            msg_body ${record["log"].gsub(/^\[[a-z0-9\-]+\](\s*\[[^\]]+\])?\s*/, '')}
-          </record>
-        </filter>
-
+        # Bước 1: parse trường log/message là JSON nếu có
         <filter logs.sn-media>
           @type parser
-          key_name msg_body
+          key_name log
           reserve_data true
           remove_key_name_field true
           <parse>
@@ -345,21 +330,35 @@ fileConfigs:
           </parse>
         </filter>
 
+        # Bước 2: Nếu trường 'message' lại là 1 JSON string, parse tiếp
         <filter logs.sn-media>
-          @type record_transformer
-          enable_ruby true
-          <record>
-            log_type ${record.has_key?("event") ? "json" : "plain"}
-            raw_message ${record.has_key?("event") ? nil : record["msg_body"]}
-          </record>
-          remove_keys msg_body
+          @type parser
+          key_name message
+          reserve_data true
+          remove_key_name_field true
+          <parse>
+            @type json
+          </parse>
         </filter>
+
+        # Bước 3: Nếu trường message vẫn còn text dạng key=value, hoặc SQL, có thể thêm parser regexp nữa (nếu thực sự cần)
+        # <filter logs.sn-media>
+        #   @type parser
+        #   key_name message
+        #   reserve_data true
+        #   remove_key_name_field false
+        #   <parse>
+        #     @type regexp
+        #     expression /.../  # tuỳ mẫu
+        #   </parse>
+        # </filter>
 
         <match **>
           @type relabel
           @label @DISPATCH
         </match>
       </label>
+
 
   03_dispatch.conf: |-
     <label @DISPATCH>
