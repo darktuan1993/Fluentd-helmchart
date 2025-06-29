@@ -1028,6 +1028,14 @@ fileConfigs:
 
         ##### logs.prod-media #####
         <filter logs.prod-media>
+          @type grep
+          <regexp>
+            key log
+            pattern /.+/
+          </regexp>
+        </filter>
+
+        <filter logs.prod-media>
           @type parser
           key_name log
           reserve_data true
@@ -1038,8 +1046,16 @@ fileConfigs:
         </filter>
 
         <filter logs.prod-media>
+          @type grep
+          <regexp>
+            key message
+            pattern /^\{/
+          </regexp>
+        </filter>
+
+        <filter logs.prod-media>
           @type parser
-          key_name message   # JSON parse ở trên đã tạo ra field "message"
+          key_name message
           reserve_data true
           remove_key_name_field false
           <parse>
@@ -1047,15 +1063,6 @@ fileConfigs:
           </parse>
         </filter>
 
-        <filter logs.prod-media>
-          @type parser
-          key_name log
-          reserve_data true
-          <parse>
-            @type regexp
-            expression /^\[(?<request_id>[^\]]+)\] +(?<sql_info>.*)$/
-          </parse>
-        </filter>
 
         # <filter logs.prod-media>
         #   @type parser
