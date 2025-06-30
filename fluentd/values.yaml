@@ -279,7 +279,7 @@ dashboards:
 ##
 plugins:
 - fluent-plugin-out-http
-- fluent-plugin-nest
+- fluent-plugin-flatten-hash
 
 ## Add fluentd config files from K8s configMaps
 ##
