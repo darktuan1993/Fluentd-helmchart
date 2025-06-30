@@ -907,16 +907,16 @@ fileConfigs:
             @type record_transformer
             enable_ruby true
             <record>
-              message_json ${record["message"] && record["message"].start_with?("{") ? JSON.parse(record["message"]) : nil}
+              data_logs ${record["message"] && record["message"].start_with?("{") ? JSON.parse(record["message"]) : nil}
             </record>
           </filter>
 
 
-          # <filter logs.prod-web>
-          #   @type nest
-          #   operation lift
-          #   nested_under message_json
-          # </filter>
+          <filter logs.prod-web>
+            @type nest
+            operation lift
+            nested_under data_logs
+          </filter>
 
 
         ##### logs.prod-detection-image #####
