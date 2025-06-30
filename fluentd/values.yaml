@@ -278,7 +278,8 @@ dashboards:
 ## Fluentd list of plugins to install
 ##
 plugins: []
-# - fluent-plugin-out-http
+- fluent-plugin-out-http
+- fluent-plugin-nest
 
 ## Add fluentd config files from K8s configMaps
 ##
@@ -861,7 +862,6 @@ fileConfigs:
         #   </parse>
         # </filter>
 
-          # 1. Xóa escape màu khỏi log
           <filter logs.prod-web>
             @type record_modifier
             enable_ruby true
@@ -870,7 +870,6 @@ fileConfigs:
             </record>
           </filter>
 
-          # 2. Parse nếu log là JSON
           <filter logs.prod-web>
             @type parser
             key_name log
@@ -878,11 +877,10 @@ fileConfigs:
             remove_key_name_field false
             <parse>
               @type json
-              json_parser yajl  # an toàn hơn oj
+              json_parser yajl
             </parse>
           </filter>
 
-          # 3. Parse nếu log là dạng: [request_id] ...
           <filter logs.prod-web>
             @type parser
             key_name log
@@ -894,7 +892,6 @@ fileConfigs:
             </parse>
           </filter>
 
-          # 4. Parse tiếp nếu message là chuỗi controller, duration...
           <filter logs.prod-web>
             @type parser
             key_name message
@@ -906,14 +903,14 @@ fileConfigs:
             </parse>
           </filter>
 
-          # 5. Parse JSON bị escape trong message (nếu có)
           <filter logs.prod-web>
             @type record_transformer
             enable_ruby true
             <record>
-              message_json ${record["message"] && record["message"].start_with?("{") ? JSON.parse(record["message"]) rescue nil : nil}
+              message_json ${record["message"] && record["message"].start_with?("{") ? JSON.parse(record["message"]) : nil}
             </record>
           </filter>
+
 
           # <filter logs.prod-web>
           #   @type nest
