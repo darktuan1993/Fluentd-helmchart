@@ -825,13 +825,7 @@ fileConfigs:
           @label @FLUENT_LOG
         </match>
 
-        <filter logs.prod-web>
-          @type record_modifier
-          enable_ruby true
-          <record>
-            log ${record["log"].gsub(/\e\[[0-9;]*m/, '')}
-          </record>
-        </filter>
+
 
 
         <filter logs.prod-marketplace>
@@ -848,17 +842,67 @@ fileConfigs:
 
 
         ##### logs.prod-web #####
+        # <filter logs.prod-web>
+        #   @type record_modifier
+        #   enable_ruby true
+        #   <record>
+        #     log ${record["log"].gsub(/\e\[[0-9;]*m/, '')}
+        #   </record>
+        # </filter>
 
-        <filter logs.prod-web>
-          @type parser
-          key_name log
-          reserve_data true
-          remove_key_name_field true
-          <parse>
-            @type regexp
-            expression /^\[(?<request_id>[^\]]+)\] method=(?<method>\w+) path=(?<path>[^\s]+) format=(?<format>\w+) controller=(?<controller>[^\s]+) action=(?<action>\w+) status=(?<status>\d+) allocations=(?<allocations>\d+) duration=(?<duration>[0-9.]+) view=(?<view>[0-9.]+) db=(?<db>[0-9.]+)/
-          </parse>
-        </filter>
+        # <filter logs.prod-web>
+        #   @type parser
+        #   key_name log
+        #   reserve_data true
+        #   remove_key_name_field true
+        #   <parse>
+        #     @type regexp
+        #     expression /^\[(?<request_id>[^\]]+)\] method=(?<method>\w+) path=(?<path>[^\s]+) format=(?<format>\w+) controller=(?<controller>[^\s]+) action=(?<action>\w+) status=(?<status>\d+) allocations=(?<allocations>\d+) duration=(?<duration>[0-9.]+) view=(?<view>[0-9.]+) db=(?<db>[0-9.]+)/
+        #   </parse>
+        # </filter>
+          <filter logs.prod-web>
+            @type record_modifier
+            enable_ruby true
+            <record>
+              log ${record["log"].gsub(/\e\[[0-9;]*m/, '')}
+            </record>
+          </filter>
+
+          <filter logs.prod-web>
+            @type parser
+            key_name log
+            reserve_data true
+            remove_key_name_field false
+            <parse>
+              @type multi_format
+              <pattern>
+                @type json
+              </pattern>
+              <pattern>
+                @type regexp
+                expression /^\[(?<request_id>[^\]]+)\] (?<message>.*)$/
+              </pattern>
+              <pattern>
+                @type regexp
+                expression /(?<time>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}).*duration=(?<duration>[0-9.]+).*controller=(?<controller>[^ ]+).*action=(?<action>[^ ]+)/
+              </pattern>
+            </parse>
+          </filter>
+
+          <!-- Nếu JSON bị escape, xử lý thêm bước sau -->
+          <filter logs.prod-web>
+            @type record_transformer
+            enable_ruby true
+            <record>
+              message_json ${record["message"] && record["message"].start_with?("{") ? JSON.parse(record["message"]) rescue nil : nil}
+            </record>
+          </filter>
+
+          <filter logs.prod-web>
+            @type nest
+            operation lift
+            nested_under message_json
+          </filter>
 
 
 
