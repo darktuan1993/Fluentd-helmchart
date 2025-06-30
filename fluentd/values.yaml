@@ -277,7 +277,7 @@ dashboards:
 
 ## Fluentd list of plugins to install
 ##
-plugins: []
+plugins:
 - fluent-plugin-out-http
 - fluent-plugin-nest
 
