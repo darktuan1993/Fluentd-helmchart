@@ -279,7 +279,9 @@ dashboards:
 ##
 plugins:
 - fluent-plugin-out-http
-# - fluent-plugin-flatten-hash
+- fluent-plugin-nested-hash-filter
+- nested_hash_helper
+- nest
 
 ## Add fluentd config files from K8s configMaps
 ##
@@ -912,11 +914,11 @@ fileConfigs:
           </filter>
 
 
-          # <filter logs.prod-web>
-          #   @type nest
-          #   operation lift
-          #   nested_under data_logs
-          # </filter>
+          <filter logs.prod-web>
+            @type nest
+            operation lift
+            nested_under data_logs
+          </filter>
 
 
         ##### logs.prod-detection-image #####
@@ -1122,42 +1124,6 @@ fileConfigs:
             @type json
           </parse>
         </filter>
-
-        # <filter logs.prod-media>
-        #   @type grep
-        #   <regexp>
-        #     key log
-        #     pattern /.+/
-        #   </regexp>
-        # </filter>
-
-        # <filter logs.prod-media>
-        #   @type parser
-        #   key_name log
-        #   reserve_data true
-        #   remove_key_name_field true
-        #   <parse>
-        #     @type json
-        #   </parse>
-        # </filter>
-
-        # <filter logs.prod-media>
-        #   @type grep
-        #   <regexp>
-        #     key message
-        #     pattern /^\{/
-        #   </regexp>
-        # </filter>
-
-        # <filter logs.prod-media>
-        #   @type parser
-        #   key_name message
-        #   reserve_data true
-        #   remove_key_name_field false
-        #   <parse>
-        #     @type json
-        #   </parse>
-        # </filter>
 
         # 🔍 Các log khác dạng JSON thì parse như cũ
         <filter logs.**>
