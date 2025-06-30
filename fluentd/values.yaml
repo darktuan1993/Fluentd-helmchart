@@ -861,6 +861,7 @@ fileConfigs:
         #   </parse>
         # </filter>
 
+          # 1. Xóa escape màu khỏi log
           <filter logs.prod-web>
             @type record_modifier
             enable_ruby true
@@ -869,29 +870,43 @@ fileConfigs:
             </record>
           </filter>
 
+          # 2. Parse nếu log là JSON
           <filter logs.prod-web>
             @type parser
             key_name log
             reserve_data true
             remove_key_name_field false
             <parse>
-              @type multi_format
-              <pattern>
-                @type json
-                json_parser oj  # hoặc yajl nếu chưa cài oj
-              </pattern>
-              <pattern>
-                @type regexp
-                expression /^\[(?<request_id>[^\]]+)\] (?<message>.*)$/
-              </pattern>
-              <pattern>
-                @type regexp
-                expression /(?<time>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}).*duration=(?<duration>[0-9.]+).*controller=(?<controller>[^ ]+).*action=(?<action>[^ ]+)/
-              </pattern>
+              @type json
+              json_parser yajl  # an toàn hơn oj
             </parse>
           </filter>
 
-          # Nếu JSON bị escape, xử lý thêm bước sau
+          # 3. Parse nếu log là dạng: [request_id] ...
+          <filter logs.prod-web>
+            @type parser
+            key_name log
+            reserve_data true
+            remove_key_name_field false
+            <parse>
+              @type regexp
+              expression /^\[(?<request_id>[^\]]+)\] (?<message>.*)$/
+            </parse>
+          </filter>
+
+          # 4. Parse tiếp nếu message là chuỗi controller, duration...
+          <filter logs.prod-web>
+            @type parser
+            key_name message
+            reserve_data true
+            remove_key_name_field false
+            <parse>
+              @type regexp
+              expression /(?<time>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}).*duration=(?<duration>[0-9.]+).*controller=(?<controller>[^ ]+).*action=(?<action>[^ ]+)/
+            </parse>
+          </filter>
+
+          # 5. Parse JSON bị escape trong message (nếu có)
           <filter logs.prod-web>
             @type record_transformer
             enable_ruby true
@@ -905,6 +920,7 @@ fileConfigs:
             operation lift
             nested_under message_json
           </filter>
+
 
         ##### logs.prod-detection-image #####
         <filter logs.prod-detection-image>
