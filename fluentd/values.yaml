@@ -913,14 +913,6 @@ fileConfigs:
             </record>
           </filter>
 
-
-          <filter logs.prod-web>
-            @type nest
-            operation lift
-            nested_under data_logs
-          </filter>
-
-
         ##### logs.prod-detection-image #####
         <filter logs.prod-detection-image>
           @type parser
