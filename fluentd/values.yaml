@@ -279,7 +279,7 @@ dashboards:
 ##
 plugins:
 - fluent-plugin-out-http
-- fluent-plugin-flatten-hash
+# - fluent-plugin-flatten-hash
 
 ## Add fluentd config files from K8s configMaps
 ##
@@ -912,11 +912,11 @@ fileConfigs:
           </filter>
 
 
-          <filter logs.prod-web>
-            @type nest
-            operation lift
-            nested_under data_logs
-          </filter>
+          # <filter logs.prod-web>
+          #   @type nest
+          #   operation lift
+          #   nested_under data_logs
+          # </filter>
 
 
         ##### logs.prod-detection-image #####
