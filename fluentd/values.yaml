@@ -1009,19 +1009,20 @@ fileConfigs:
           </parse>
         </filter>
 
-
+        ##### logs.prod-worker-sync #####
         <filter logs.prod-worker-sync>
           @type record_transformer
+          enable_ruby true
           <record>
             log_type ${
-              if record['log'] =~ /^\{.*\}$/
-                'json'
-              elsif record['log'] =~ /(SELECT|INSERT|UPDATE|DELETE).*\(.*ms\)/
-                'sql'
-              elsif record['log'] =~ /sidekiq|worker|jid|class=/i
-                'sidekiq'
-              elsif record['log'] =~ /API Request|API Response|api_/i
-                'api'
+              # Nếu là JSON object
+              if record['log'] =~ /^\{.*\}$/ then 'json'
+              # Nếu là Ruby hash to_s
+              elsif record['log'] =~ /^\{.*\=\>.*\}$/ then 'ruby_hash'
+              # Nếu có các keyword cảnh báo/lỗi của Sidekiq
+              elsif record['log'] =~ /(WARN|ERROR|fail|exception|raised|failed|StandardError|Job raised exception)/i then 'error'
+              # Nếu là dòng trạng thái (started, API Request, API Response, ...)
+              elsif record['log'] =~ /(started:|Chat API Request|Chat API Response|failed:|elapsed=|Response Status:|User ID:|Headers:|Payload|Keys:)/i then 'event'
               else
                 'text'
               end
@@ -1029,43 +1030,34 @@ fileConfigs:
           </record>
         </filter>
 
-        # Parse JSON nếu là log_type: json
         <filter logs.prod-worker-sync>
-          @type grep
-          <regexp>
+          @type rewrite_tag_filter
+          <rule>
             key log_type
             pattern ^json$
-          </regexp>
-        </filter>
-        <filter logs.prod-worker-sync>
-          @type parser
-          key_name log
-          reserve_data true
-          remove_key_name_field true
-          <parse>
-            @type json
-          </parse>
-        </filter>
-
-        # Parse SQL nếu là log_type: sql
-        <filter logs.prod-worker-sync>
-          @type grep
-          <regexp>
+            tag logs.prod-worker-sync.json
+          </rule>
+          <rule>
             key log_type
-            pattern ^sql$
-          </regexp>
+            pattern ^ruby_hash$
+            tag logs.prod-worker-sync.ruby_hash
+          </rule>
+          <rule>
+            key log_type
+            pattern ^error$
+            tag logs.prod-worker-sync.error
+          </rule>
+          <rule>
+            key log_type
+            pattern ^event$
+            tag logs.prod-worker-sync.event
+          </rule>
+          <rule>
+            key log_type
+            pattern ^text$
+            tag logs.prod-worker-sync.text
+          </rule>
         </filter>
-        <filter logs.prod-worker-sync>
-          @type parser
-          key_name log
-          reserve_data true
-          remove_key_name_field true
-          <parse>
-            @type regexp
-            expression /^(?<sql_type>SELECT|INSERT|UPDATE|DELETE)[^()]+ \((?<duration_ms>[0-9.]+)ms\) (?<query>.+)$/
-          </parse>
-        </filter>
-
 
 
         ##### logs.prod-worker-suggestion #####
