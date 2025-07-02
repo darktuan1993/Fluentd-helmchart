@@ -1015,12 +1015,11 @@ fileConfigs:
           key_name log
           reserve_data true
           remove_key_name_field true
+          emit_invalid_record_to_error false
           <parse>
             @type json
           </parse>
         </filter>
-
-
 
         ##### logs.prod-worker-suggestion #####
         <filter logs.prod-worker-suggestion>
