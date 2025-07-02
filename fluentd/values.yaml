@@ -1012,7 +1012,6 @@ fileConfigs:
 
         <filter logs.prod-worker-sync>
           @type record_transformer
-          enable_ruby true
           <record>
             log_type ${
               if record['log'] =~ /^\{.*\}$/
