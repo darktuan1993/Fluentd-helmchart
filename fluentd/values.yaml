@@ -555,6 +555,22 @@ fileConfigs:
         </parse>
       </source>
 
+      ##### prod-worker-sync ######
+      <source>
+        @type tail
+        path /var/log/containers/prod-worker-sync-*.log
+        pos_file /var/log/pos/prod-worker-sync.pos
+        tag logs.prod-worker-sync
+        read_from_head true
+        @label @KUBERNETES
+        <parse>
+          @type regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) F (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%Z'
+          keep_time_key true
+        </parse>
+      </source>      
+
       ###### prod-pt ######
       <source>
         @type tail
@@ -993,6 +1009,40 @@ fileConfigs:
           </parse>
         </filter>
 
+
+        ##### logs.prod-worker-sync #####
+        <filter logs.prod-worker-sync>
+          @type record_modifier
+          enable_ruby true
+          <record>
+            log ${record["log"].gsub(/\e\[[0-9;]*m/, '') rescue record["log"]}
+          </record>
+        </filter>
+
+        # 1. Parse JSON log (ưu tiên parse JSON trước)
+        <filter logs.prod-worker-sync>
+          @type parser
+          key_name log
+          reserve_data true
+          remove_key_name_field true
+          <parse>
+            @type json
+          </parse>
+        </filter>
+
+        # 2. Parse SQL log nếu là SQL
+        <filter logs.prod-worker-sync>
+          @type parser
+          key_name log
+          reserve_data true
+          remove_key_name_field true
+          <parse>
+            @type regexp
+            expression /^(?<sql_type>.+?)\s+\((?<duration_ms>[0-9.]+)ms\)\s+(?<query>(SELECT|INSERT|UPDATE|DELETE).*)$/
+          </parse>
+        </filter>
+
+
         ##### logs.prod-worker-suggestion #####
         <filter logs.prod-worker-suggestion>
           @type record_modifier
@@ -1351,6 +1401,20 @@ fileConfigs:
         password KyZjD8qkotm70Ci
         verify_es_version_at_startup false
         index_name prod-notification-api-logs
+        reconnect_on_error true
+        reload_on_failure true
+        request_timeout 30s
+      </match>
+
+      <match logs.prod-worker-sync>
+        @type elasticsearch
+        @id elasticsearch.prod-worker-sync
+        host 172.16.0.225
+        port 19200
+        user elastic
+        password KyZjD8qkotm70Ci
+        verify_es_version_at_startup false
+        index_name prod-worker-sync-logs
         reconnect_on_error true
         reload_on_failure true
         request_timeout 30s
